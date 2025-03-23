@@ -3,7 +3,7 @@
 </div>
 
 # What is Lag Compensation and why do we need it?
-Lag Compensation is essential to avoid clients needing to lead their shots in a multiplayer online shooter. I discovered my need for a lag compensation system when creating my own FPS using Mirror Networking in Unity, [Client Side Prediction](https://www.gabrielgambetta.com/client-side-prediction-server-reconciliation.html) and [Snapshot Interpolation](https://gafferongames.com/post/snapshot_interpolation/).\
+Lag Compensation is essential to avoid clients needing to lead their shots in a multiplayer online shooter. I discovered my need for a lag compensation system when creating my own FPS in Unity using Mirror Networking, [Client Side Prediction](https://www.gabrielgambetta.com/client-side-prediction-server-reconciliation.html) and [Snapshot Interpolation](https://gafferongames.com/post/snapshot_interpolation/).\
 This also [seems to be needed for Godot](https://github.com/godotengine/godot-proposals/issues/5181).
 
 Explained by gabriel gambetta [here](https://www.gabrielgambetta.com/lag-compensation.html)
@@ -79,7 +79,17 @@ Then, <code>RaycastPrepare()</code> is called to check which collections interse
 Following that, a normal raycast can be performed.
 Lastly, <code>SimulateReset()</code> resets the transforms.
 
+# Performance Comparison
 
+In my testing, the custom "parametric" raycasts not using the physics engine seem to perform better, especially due to no need to move the transforms of nodes when doing lag compensation. However, the addition of bounding sphere checking made the physics approach using the "HybridTracker" quite viable as well. When I run the lag compensation test scene with the default settings, I receive the following values on my machine (1000 loop iterations):
+
+summedTimeParametric  0.0138s
+summedTimePhysicalOptimized 0.327s
+summedTimePhysicalSimple 1.75s
+
+Note that the "Physical Simple" approach has very similar performance independent of whether a ray actually hits any colliders or not, while the other two will perform even better when not hit.
+
+The reason why one might consider the hybrid apporach is  because this supports arbitrarily shaped mesh collision shapes as well, while the custom HitColliders currently only support capsule, box and sphere shapes. Also, when raycasting anyways for collision checks with static environment, this apporach also might appear more appealing and the optimized solution includion collection bound sphere checking offers moderate performance.
 
 # Unity Version
 Created with Godot Version 4.4, but should work with any newer version and possibly older 4.X most older versions as well. Before 4.4, Jolt Physics was not included by default however and is needed for collision shape transform updates to immediately be valid for raycasts.
