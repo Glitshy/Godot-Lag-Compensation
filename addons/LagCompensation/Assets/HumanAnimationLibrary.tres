@@ -1,0 +1,10 @@
+[gd_resource type="AnimationLibrary" load_steps=3 format=3 uid="uid://cqa63yb07ylwb"]
+
+[ext_resource type="Animation" uid="uid://bo3dopdg685pw" path="res://addons/LagCompensation/Assets/Animations/Walk Forward/mixamo_com.res" id="1_2nf8g"]
+[ext_resource type="Animation" uid="uid://bx1gbotgao84m" path="res://addons/LagCompensation/Assets/Animations/Walk Forward/Take 001.res" id="2_nrvso"]
+
+[resource]
+_data = {
+"Take 001": ExtResource("2_nrvso"),
+"mixamo_com": ExtResource("1_2nf8g")
+}

@@ -1,0 +1,80 @@
+[gd_scene load_steps=11 format=3 uid="uid://mpt077rnusuy"]
+
+[ext_resource type="Script" uid="uid://bhc8n5h7dg3v6" path="res://addons/LagCompensation/Scripts/Testing/HitColliderTester.cs" id="1_6xud5"]
+[ext_resource type="Script" uid="uid://mmugadkmbsne" path="res://addons/LagCompensation/Scripts/Testing/Turntable.cs" id="1_kelcc"]
+[ext_resource type="Script" uid="uid://dsi1omkwid28s" path="res://addons/LagCompensation/Scripts/LagCompensationParametric/HitColliderCollection.cs" id="2_nyvaj"]
+[ext_resource type="Script" uid="uid://dqwk6iq177qx8" path="res://addons/LagCompensation/Scripts/LagCompensationParametric/HitColliderCapsule.cs" id="3_akxdu"]
+[ext_resource type="Script" uid="uid://dhmy0b1mi0axm" path="res://addons/LagCompensation/Scripts/LagCompensationParametric/HitColliderSphere.cs" id="4_sw5yc"]
+[ext_resource type="Script" uid="uid://bncbk5c6ryse8" path="res://addons/LagCompensation/Scripts/LagCompensationParametric/HitColliderBox.cs" id="5_l5bm7"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_rn86d"]
+radius = 0.03
+height = 0.06
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_vtlpm"]
+radius = 0.55
+height = 1.9
+
+[sub_resource type="SphereMesh" id="SphereMesh_xxqw2"]
+radius = 0.45
+height = 0.9
+
+[sub_resource type="BoxMesh" id="BoxMesh_cx566"]
+size = Vector3(1.5, 0.9, 1.1)
+
+[node name="Root" type="Node3D"]
+
+[node name="Tester Turntable" type="Node3D" parent="."]
+script = ExtResource("1_kelcc")
+
+[node name="Tester" type="Node3D" parent="Tester Turntable" node_paths=PackedStringArray("colliders")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -2.5)
+script = ExtResource("1_6xud5")
+colliders = []
+summedTime = PackedFloat64Array(0, 0)
+
+[node name="RayCast3D" type="RayCast3D" parent="Tester Turntable/Tester"]
+target_position = Vector3(0, 0, 1)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Tester Turntable/Tester"]
+mesh = SubResource("SphereMesh_rn86d")
+
+[node name="Colliders" type="Node3D" parent="."]
+
+[node name="Collection" type="Node3D" parent="Colliders"]
+script = ExtResource("2_nyvaj")
+radius = 3.0
+
+[node name="C_Capsule" type="Node3D" parent="Colliders/Collection"]
+transform = Transform3D(0.87774, 0.3299, 0.347473, -0.457076, 0.794046, 0.400716, -0.143712, -0.510547, 0.847756, 1.04825, 0.205017, -1.10735)
+script = ExtResource("3_akxdu")
+height = 1.9
+radius = 0.55
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Colliders/Collection/C_Capsule"]
+mesh = SubResource("CapsuleMesh_vtlpm")
+
+[node name="C_Sphere" type="Node3D" parent="Colliders/Collection"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.20061, -0.0975314, 0.987817)
+script = ExtResource("4_sw5yc")
+radius = 0.45
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Colliders/Collection/C_Sphere"]
+mesh = SubResource("SphereMesh_xxqw2")
+
+[node name="C_Box" type="Node3D" parent="Colliders/Collection"]
+transform = Transform3D(0.428415, 0.673805, -0.602037, -0.829335, 0.0287247, -0.558013, -0.358698, 0.738351, 0.571116, -1.16031, 0.221362, 0.251424)
+script = ExtResource("5_l5bm7")
+size = Vector3(1.5, 0.9, 1.1)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Colliders/Collection/C_Box"]
+mesh = SubResource("BoxMesh_cx566")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(-0.994912, 0.0324414, -0.0953845, -0.0428714, 0.720433, 0.6922, 0.0911739, 0.692766, -0.715376, -0.290463, 2.61399, -2.56094)
+
+[node name="Label" type="Label" parent="."]
+offset_right = 198.0
+offset_bottom = 67.0
+text = "Test ray intersection with custom colliders
+Visualizes entry and exit normal vectors"

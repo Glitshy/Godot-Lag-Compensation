@@ -1,0 +1,7 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+
+
+# For IDE stuff, e.g. ignore Visual studio
+.vs/

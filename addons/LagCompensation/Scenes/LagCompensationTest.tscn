@@ -1,0 +1,69 @@
+[gd_scene load_steps=8 format=3 uid="uid://ds3hn5giu4iu7"]
+
+[ext_resource type="PackedScene" uid="uid://uot65q5hju7w" path="res://addons/LagCompensation/Scenes/Human.tscn" id="1_m5quv"]
+[ext_resource type="Script" uid="uid://w8psh1v7s5rs" path="res://addons/LagCompensation/Scripts/Testing/TestLagCompensation.cs" id="1_rdprx"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_jqmd6"]
+size = Vector3(0.04, 0.04, 0.2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_g1q45"]
+albedo_color = Color(0, 0, 0, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_qd6gc"]
+size = Vector3(0.04, 0.13, 0.06)
+
+[sub_resource type="BoxMesh" id="BoxMesh_yb52s"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_223oj"]
+
+[node name="Root" type="Node3D"]
+
+[node name="Tester" type="Node3D" parent="." node_paths=PackedStringArray("raycaster")]
+script = ExtResource("1_rdprx")
+raycaster = NodePath("RayCast3D")
+testType = 3
+doCheckAfterSeconds = 0.9
+loopCount = 1000
+raycastProjectileSpeed = 200.0
+
+[node name="RayCast3D" type="RayCast3D" parent="Tester"]
+target_position = Vector3(0, 0, 1)
+
+[node name="Visual Raycast Origin" type="Node3D" parent="."]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Visual Raycast Origin"]
+mesh = SubResource("BoxMesh_jqmd6")
+surface_material_override/0 = SubResource("StandardMaterial3D_g1q45")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="Visual Raycast Origin"]
+transform = Transform3D(1, 0, 0, 0, 0.945989, -0.324198, 0, 0.324198, 0.945989, 0, -0.0666671, -0.0594278)
+mesh = SubResource("BoxMesh_qd6gc")
+surface_material_override/0 = SubResource("StandardMaterial3D_g1q45")
+
+[node name="Floor" type="MeshInstance3D" parent="."]
+transform = Transform3D(9, 0, 0, 0, 1, 0, 0, 0, 9, 0, -1.5, 0)
+mesh = SubResource("BoxMesh_yb52s")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="Floor"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Floor/StaticBody3D"]
+shape = SubResource("BoxShape3D_223oj")
+
+[node name="Human" parent="." instance=ExtResource("1_m5quv")]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -1, -1, 2)
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(0.957489, -0.195463, 0.212153, 0.00053994, 0.736655, 0.676268, -0.288468, -0.647404, 0.705445, 1.07603, 1.99247, 5.03035)
+
+[node name="Label (README)" type="Label" parent="."]
+offset_right = 40.0
+offset_bottom = 23.0
+text = "Animate an skeleton with hit colliders and store position/rotation data at a fixed interval together with timestamps
+Then simulate a ray at a past timestamp, including interpolation between past timestamps
+
+By default, waits for 0.9 seconds, then simulates a comepnsation for a projectile with a lag of 0.3 seconds
+
+Compare performancy be repeating this in a loop for 1000 times with physical and
+ parametric (= custom nodes using custom collider math) colliders and raycasts
+
+Rotate the humanoid by 180 degrees to test performance when there is no intersection with the ray"

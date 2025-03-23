@@ -1,0 +1,33 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="Godot-Lag-Compensation"
+config/description="Example preoject of raycast lag compensation for multiplayer"
+run/main_scene="res://addons/LagCompensation/Scenes/HitColliderTest.tscn"
+config/features=PackedStringArray("4.4", "C#", "Forward Plus")
+config/icon="uid://dw6gpoglbmelu"
+
+[autoload]
+
+DebugDraw="*res://addons/debug_drawing/DebugDraw.cs"
+
+[dotnet]
+
+project/assembly_name="Godot-Lag-Compensation"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/LagCompensation/plugin.cfg", "res://addons/debug_drawing/plugin.cfg")
+
+[physics]
+
+3d/physics_engine="Jolt Physics"
