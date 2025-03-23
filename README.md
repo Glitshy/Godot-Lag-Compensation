@@ -3,7 +3,8 @@
 </div>
 
 # What is Lag Compensation and why do we need it?
-Lag Compensation is essential to avoid clients needing to lead their shots in a multiplayer online shooter. I discovered my need for a lag compensation system when creating my own FPS using Mirror Networking, [Client Side Prediction](https://www.gabrielgambetta.com/client-side-prediction-server-reconciliation.html) and [Snapshot Interpolation](https://gafferongames.com/post/snapshot_interpolation/).
+Lag Compensation is essential to avoid clients needing to lead their shots in a multiplayer online shooter. I discovered my need for a lag compensation system when creating my own FPS using Mirror Networking in Unity, [Client Side Prediction](https://www.gabrielgambetta.com/client-side-prediction-server-reconciliation.html) and [Snapshot Interpolation](https://gafferongames.com/post/snapshot_interpolation/).\
+This also [seems to be needed for Godot](https://github.com/godotengine/godot-proposals/issues/5181).
 
 Explained by gabriel gambetta [here](https://www.gabrielgambetta.com/lag-compensation.html)
 
