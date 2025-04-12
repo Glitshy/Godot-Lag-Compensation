@@ -8,6 +8,7 @@ namespace PG.LagCompensation.Base
     /// <summary>
     /// Abstract clss for all trackers, can store position/oration data and perform bounding sphere parametric raycasts as an initial hit check before using parametic or physical raycasts against the actual shape
     /// </summary>
+    [GlobalClass]
     public abstract partial class TrackerBase : Node3D
     {
         /// <summary>

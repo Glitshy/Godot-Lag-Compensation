@@ -5,6 +5,7 @@ using PG.LagCompensation.Base;
 
 namespace PG.LagCompensation.Parametric
 {
+    [GlobalClass]
     [Tool]
     public partial class HitColliderBox : HitColliderGeneric
     {

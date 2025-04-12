@@ -14,63 +14,133 @@ namespace PG.LagCompensation.Testing
     /// </summary>
     public partial class HitColliderTester : Node3D
     {
-        [Export]
-        private HitColliderGeneric[] colliders;
-
+        
         [Export]
         private float maxDistance = 10f;
-
-
-        //[Header("Performance Test Settings")]
+        [Export]
+        private HitColliderCollection collection;
         [Export]
         private bool doPerformanceTest = false;
         [Export]
-        private int loopCount = 10;
-
-        //[Header("Performance Test Results")]
-        [Export]
-        private double[] summedTime;
+        private int loopCount = 1000;
 
         /// <summary>
         /// counter for debug draw interval
         /// </summary>
-        private float counter = 0f;
+        private float _counter = 0f;
         /// <summary>
         /// Time between debug draw calls
         /// </summary>
-        private float debugDrawInterval = 1f;
+        private float _debugDrawInterval = 1f;
 
+        /// <summary>
+        /// Buttons for enabling/disabling colliders
+        /// </summary>
+        private List<Button> _buttons = new List<Button>();
+        private List<Vector3> _buttonLocationOffsets = new List<Vector3>();
 
         public override void _Ready()
         {
+            _counter = _debugDrawInterval; // set it to inveral value for immediate drawing
+
+            // create buttons via CallDeferred, because otherwise it doesn't work inside _Ready()
+            CallDeferred(nameof(CreateButtons));
+
             if (!doPerformanceTest)
                 return;
 
-            CallDeferred(nameof(DelayedAction));
+            CallDeferred(nameof(DelayedTest));
         }
 
+        private void CreateButtons()
+        {
+            for (int i = 0; i < collection.GetHitColliderCount; i++)
+            {
+                HitColliderGeneric col = collection.GetHitColliderAtIndex(i);
+                var button = new Button();
+                button.Text = col.Name;
+                int buttonIndex = i; // important: must create local deep copy of integer, otherwise the ButtonPressed() method will always use the latest value of i
+                button.Pressed += () => ButtonPressed(buttonIndex);
+                _buttons.Add(button);
+                _buttonLocationOffsets.Add(Vector3.Zero);
+            }
 
+            var buttonAll = new Button();
+            buttonAll.Text = "All";
+            _buttons.Add(buttonAll);
+            buttonAll.Pressed += () => ButtonPressed(-1);
 
-        private async void DelayedAction()
+            for (int i = 0; i < _buttons.Count; i++)
+            {
+                _buttons[i].Position = new Vector2(i * 100f, 0f);
+                GetTree().CurrentScene.AddChild(_buttons[i]);
+            }
+        }
+
+        /// <summary>
+        /// Move all colliders out of the way except the given one. If given -1, reset all postions.
+        /// </summary>
+        private void ButtonPressed(int index)
+        {
+            int count = collection.GetHitColliderCount;
+
+            for (int i = 0; i < count; i++)
+            {
+                HitColliderGeneric col = collection.GetHitColliderAtIndex(i);
+
+                if (index == i || index == -1)
+                {
+                    col.GlobalPosition -= _buttonLocationOffsets[i];
+                    _buttonLocationOffsets[i] = Vector3.Zero;
+                }
+                else
+                {
+                    Vector3 offset = Vector3.Right * 100f;
+                    col.GlobalPosition += offset;
+                    _buttonLocationOffsets[i] += offset;
+                }
+            }
+        }
+
+        private async void DelayedTest()
         {
             await ToSignal(GetTree().CreateTimer(0.5f), SceneTreeTimer.SignalName.Timeout);
 
-            for (int i = 0; i < colliders.Length; i++)
+            int count = collection.GetHitColliderCount;
+
+            double[] summedTime = new double[count];
+            bool[] hits = new bool[count];
+
+            GD.Print("Testing performance with " + loopCount + " raycast iterations per collider");
+
+            for (int i = 0; i < count; i++)
             {
+                HitColliderGeneric col = collection.GetHitColliderAtIndex(i);
+
+                // cast rays vertically down onto the colliders
+                Vector3 rayOrigin = col.GlobalPosition + Vector3.Up * maxDistance * 0.5f;
+                Vector3 rayDirection = -Vector3.Up;
+
                 double t = Time.GetTicksUsec() * 1e-6;
 
                 for (int k = 0; k < loopCount; k++)
                 {
-                    colliders[i].ColliderCastLive(GlobalPosition, GlobalBasis.Z, maxDistance, out ColliderCastHit _hit);
-
+                    hits[i] = col.ColliderCastLive(rayOrigin, rayDirection, maxDistance, out ColliderCastHit _hit);
                 }
-
 
                 summedTime[i] = Time.GetTicksUsec() * 1e-6 - t;
             }
 
+            for (int i = 0; i < count; i++)
+            {
+                HitColliderGeneric col = collection.GetHitColliderAtIndex(i);
+
+                // also print if the raycasts hit. Should always be true because we cast straigt down onto the collider center location. Only might be false if a mesh collider with a hole was used.
+                GD.Print("Collider " + col.Name + " time " + summedTime[i].ToString("F6") + " seconds" + " | " + " hit=" + hits[i].ToString());
+            }
 
 
+            doPerformanceTest = false; // allow process again after the test is done
         }
 
 
@@ -80,12 +150,12 @@ namespace PG.LagCompensation.Testing
             if (doPerformanceTest)
                 return;
 
-            counter += (float)delta;
+            _counter += (float)delta;
 
-            if (counter > debugDrawInterval)
+            if (_counter > _debugDrawInterval)
             {
-                counter -= debugDrawInterval;
-                ColliderCastSystem.DebugDrawCollidersLive(debugDrawInterval);
+                _counter -= _debugDrawInterval;
+                ColliderCastSystem.DebugDrawCollidersLive(_debugDrawInterval);
             }
 
 

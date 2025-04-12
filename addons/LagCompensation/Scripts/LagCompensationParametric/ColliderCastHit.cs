@@ -44,6 +44,11 @@ namespace PG.LagCompensation.Parametric
         {
             get { return new ColliderCastHit { entryPoint = Vector3.Zero, entryNormal = Vector3.Zero, entryDistance = Mathf.Inf, exitPoint = Vector3.Zero, exitNormal = Vector3.Zero, exitDistance = Mathf.Inf }; }
         }
+
+        public override string ToString()
+        {
+            return String.Format("Entry: P={0} N={1} D={2} Exit: P={3} N={4} D={5}", entryPoint, entryNormal, entryDistance, exitPoint, exitNormal, exitDistance);
+        }
     }
 
 }

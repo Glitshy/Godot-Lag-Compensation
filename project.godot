@@ -28,6 +28,10 @@ project/assembly_name="Godot-Lag-Compensation"
 
 enabled=PackedStringArray("res://addons/LagCompensation/plugin.cfg", "res://addons/debug_drawing/plugin.cfg")
 
+[filesystem]
+
+import/blender/enabled=false
+
 [physics]
 
 3d/physics_engine="Jolt Physics"

@@ -1,11 +1,14 @@
-[gd_scene load_steps=11 format=3 uid="uid://mpt077rnusuy"]
+[gd_scene load_steps=15 format=3 uid="uid://mpt077rnusuy"]
 
 [ext_resource type="Script" uid="uid://bhc8n5h7dg3v6" path="res://addons/LagCompensation/Scripts/Testing/HitColliderTester.cs" id="1_6xud5"]
 [ext_resource type="Script" uid="uid://mmugadkmbsne" path="res://addons/LagCompensation/Scripts/Testing/Turntable.cs" id="1_kelcc"]
 [ext_resource type="Script" uid="uid://dsi1omkwid28s" path="res://addons/LagCompensation/Scripts/LagCompensationParametric/HitColliderCollection.cs" id="2_nyvaj"]
 [ext_resource type="Script" uid="uid://dqwk6iq177qx8" path="res://addons/LagCompensation/Scripts/LagCompensationParametric/HitColliderCapsule.cs" id="3_akxdu"]
 [ext_resource type="Script" uid="uid://dhmy0b1mi0axm" path="res://addons/LagCompensation/Scripts/LagCompensationParametric/HitColliderSphere.cs" id="4_sw5yc"]
+[ext_resource type="Script" uid="uid://obb3gno2ukck" path="res://addons/LagCompensation/Scripts/LagCompensationParametric/HitColliderCylinder.cs" id="5_jp5my"]
 [ext_resource type="Script" uid="uid://bncbk5c6ryse8" path="res://addons/LagCompensation/Scripts/LagCompensationParametric/HitColliderBox.cs" id="5_l5bm7"]
+[ext_resource type="ArrayMesh" uid="uid://bfkehl5d0uhge" path="res://addons/LagCompensation/Assets/Test_Mesh_Cube_001.res" id="7_igi13"]
+[ext_resource type="Script" uid="uid://cp8vcwr78obfn" path="res://addons/LagCompensation/Scripts/LagCompensationParametric/HitColliderMesh.cs" id="7_rf4kf"]
 
 [sub_resource type="SphereMesh" id="SphereMesh_rn86d"]
 radius = 0.03
@@ -14,6 +17,8 @@ height = 0.06
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_vtlpm"]
 radius = 0.55
 height = 1.9
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_46i0t"]
 
 [sub_resource type="SphereMesh" id="SphereMesh_xxqw2"]
 radius = 0.45
@@ -27,11 +32,11 @@ size = Vector3(1.5, 0.9, 1.1)
 [node name="Tester Turntable" type="Node3D" parent="."]
 script = ExtResource("1_kelcc")
 
-[node name="Tester" type="Node3D" parent="Tester Turntable" node_paths=PackedStringArray("colliders")]
+[node name="Tester" type="Node3D" parent="Tester Turntable" node_paths=PackedStringArray("collection")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -2.5)
 script = ExtResource("1_6xud5")
-colliders = []
-summedTime = PackedFloat64Array(0, 0)
+collection = NodePath("../../Colliders/Collection")
+doPerformanceTest = true
 
 [node name="RayCast3D" type="RayCast3D" parent="Tester Turntable/Tester"]
 target_position = Vector3(0, 0, 1)
@@ -41,12 +46,14 @@ mesh = SubResource("SphereMesh_rn86d")
 
 [node name="Colliders" type="Node3D" parent="."]
 
-[node name="Collection" type="Node3D" parent="Colliders"]
+[node name="Collection" type="Node3D" parent="Colliders" node_paths=PackedStringArray("hitCollidersGodot")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00790501, 2.38419e-07, 0.00800276)
 script = ExtResource("2_nyvaj")
 radius = 3.0
+hitCollidersGodot = [NodePath("C_Cylinder"), NodePath("C_Capsule"), NodePath("C_Sphere"), NodePath("C_Box"), NodePath("C_Mesh")]
 
 [node name="C_Capsule" type="Node3D" parent="Colliders/Collection"]
-transform = Transform3D(0.87774, 0.3299, 0.347473, -0.457076, 0.794046, 0.400716, -0.143712, -0.510547, 0.847756, 1.04825, 0.205017, -1.10735)
+transform = Transform3D(0.903335, 0.265584, 0.336824, -0.336824, 0.925417, 0.173648, -0.265584, -0.270313, 0.925417, 1.04825, 0.205017, -1.10735)
 script = ExtResource("3_akxdu")
 height = 1.9
 radius = 0.55
@@ -54,8 +61,15 @@ radius = 0.55
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Colliders/Collection/C_Capsule"]
 mesh = SubResource("CapsuleMesh_vtlpm")
 
+[node name="C_Cylinder" type="Node3D" parent="Colliders/Collection"]
+transform = Transform3D(0.69343, 0.633278, -0.343676, -0.674354, 0.738408, 0, 0.253773, 0.231759, 0.939088, 1.00077, 0.671017, 1.28784)
+script = ExtResource("5_jp5my")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Colliders/Collection/C_Cylinder"]
+mesh = SubResource("CylinderMesh_46i0t")
+
 [node name="C_Sphere" type="Node3D" parent="Colliders/Collection"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.20061, -0.0975314, 0.987817)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.90856, -0.0975314, 0.461345)
 script = ExtResource("4_sw5yc")
 radius = 0.45
 
@@ -63,12 +77,23 @@ radius = 0.45
 mesh = SubResource("SphereMesh_xxqw2")
 
 [node name="C_Box" type="Node3D" parent="Colliders/Collection"]
-transform = Transform3D(0.428415, 0.673805, -0.602037, -0.829335, 0.0287247, -0.558013, -0.358698, 0.738351, 0.571116, -1.16031, 0.221362, 0.251424)
+transform = Transform3D(0.428415, 0.673805, -0.602037, -0.829335, 0.0287247, -0.558013, -0.358698, 0.738351, 0.571116, -1.16031, 0.221362, 1.00048)
 script = ExtResource("5_l5bm7")
 size = Vector3(1.5, 0.9, 1.1)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Colliders/Collection/C_Box"]
 mesh = SubResource("BoxMesh_cx566")
+
+[node name="C_Mesh" type="Node3D" parent="Colliders/Collection"]
+transform = Transform3D(0.94357, 0.321124, 0.0809646, -0.331173, 0.914937, 0.230682, 0, -0.244478, 0.969655, -0.976938, 0, -0.913623)
+script = ExtResource("7_rf4kf")
+mesh = ExtResource("7_igi13")
+meshScale = Vector3(0.9, 1.1, 1)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Colliders/Collection/C_Mesh"]
+transform = Transform3D(0.9, 0, 0, 0, 1.1, 0, 0, 0, 1, 0, 0, 0)
+mesh = ExtResource("7_igi13")
+skeleton = NodePath("")
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(-0.994912, 0.0324414, -0.0953845, -0.0428714, 0.720433, 0.6922, 0.0911739, 0.692766, -0.715376, -0.290463, 2.61399, -2.56094)
@@ -76,5 +101,8 @@ transform = Transform3D(-0.994912, 0.0324414, -0.0953845, -0.0428714, 0.720433, 
 [node name="Label" type="Label" parent="."]
 offset_right = 198.0
 offset_bottom = 67.0
-text = "Test ray intersection with custom colliders
-Visualizes entry and exit normal vectors"
+text = "
+Test ray intersection with custom colliders
+Visualizes entry and exit normal vectors
+
+Set \"Do Performance Test\" and \"Loop Count\" variables on \"Tester\" Node to disable/modify the performance test"

@@ -779,9 +779,9 @@ skin = SubResource("Skin_3tc27")
 [node name="PhysicalBoneSimulator3D" type="PhysicalBoneSimulator3D" parent="Character Test/Y Bot/Skeleton3D"]
 
 [node name="Physical Bone mixamorig_Hips" type="PhysicalBone3D" parent="Character Test/Y Bot/Skeleton3D/PhysicalBoneSimulator3D"]
-transform = Transform3D(1, -0.000709323, 2.03471e-07, 8.72678e-05, 0.122745, -0.992438, 0.000703934, 0.992438, 0.122745, 7.16837e-06, 1.04754, -0.00744214)
-joint_offset = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.32682e-06, 0.00129605, 0.0501558)
-body_offset = Transform3D(1, -0.000695147, -8.59746e-05, 1.39698e-09, 0.122745, -0.992438, 0.000700444, 0.992438, 0.122745, 1.15399e-05, 0.0496175, -0.00744262)
+transform = Transform3D(1, -0.000709323, 2.03469e-07, 8.72678e-05, 0.122745, -0.992438, 0.000703934, 0.992438, 0.122745, 7.17057e-06, 1.04754, -0.00744228)
+joint_offset = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.32893e-06, 0.00129618, 0.0501559)
+body_offset = Transform3D(1, -0.000695147, -8.59746e-05, 1.39698e-09, 0.122745, -0.992438, 0.000700444, 0.992438, 0.122745, 1.15421e-05, 0.0496175, -0.00744276)
 bone_name = "mixamorig_Hips"
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Character Test/Y Bot/Skeleton3D/PhysicalBoneSimulator3D/Physical Bone mixamorig_Hips"]
@@ -799,8 +799,8 @@ _target = NodePath("..")
 [node name="Physical Bone mixamorig_Spine" type="PhysicalBone3D" parent="Character Test/Y Bot/Skeleton3D/PhysicalBoneSimulator3D"]
 transform = Transform3D(1, -1.46856e-05, 9.84351e-05, 9.94894e-05, 0.121236, -0.992624, 2.64334e-06, 0.992624, 0.121236, -8.48127e-06, 1.15538, -0.0193845)
 joint_type = 1
-joint_offset = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.62034e-06, -2.23515e-08, 0.0586601)
-body_offset = Transform3D(1, 1.02464e-07, 1.94105e-08, 1.94209e-08, 0, -1, -1.02464e-07, 1, 0, -2.62148e-06, 0.0586601, 2.23517e-08)
+joint_offset = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.62034e-06, -2.23514e-08, 0.0586601)
+body_offset = Transform3D(1, 1.02463e-07, 1.94105e-08, 1.94208e-08, 0, -1, -1.02464e-07, 1, 0, -2.62148e-06, 0.0586601, 2.23517e-08)
 bone_name = "mixamorig_Spine"
 joint_constraints/bias = 0.3
 joint_constraints/damping = 1.0
@@ -821,8 +821,8 @@ _target = NodePath("..")
 [node name="Physical Bone mixamorig_Spine1" type="PhysicalBone3D" parent="Character Test/Y Bot/Skeleton3D/PhysicalBoneSimulator3D"]
 transform = Transform3D(1, -1.47829e-05, 7.97822e-05, 8.09839e-05, 0.120847, -0.992671, 5.03313e-06, 0.992671, 0.120847, -1.62333e-05, 1.28041, -0.0346286)
 joint_type = 1
-joint_offset = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.68416e-07, 1.2666e-07, 0.0672939)
-body_offset = Transform3D(1, -2.98292e-08, -7.11134e-09, -7.12083e-09, 0, -1, 2.98278e-08, 1, 0, 7.68894e-07, 0.0672939, -1.2666e-07)
+joint_offset = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.68415e-07, 1.2666e-07, 0.0672939)
+body_offset = Transform3D(1, -2.98282e-08, -7.11134e-09, -7.12078e-09, 0, -1, 2.98273e-08, 1, 0, 7.68894e-07, 0.0672939, -1.2666e-07)
 bone_name = "mixamorig_Spine1"
 joint_constraints/bias = 0.3
 joint_constraints/damping = 1.0
@@ -855,10 +855,10 @@ radius = 1.1
 trackersGodot = [NodePath("../../Physical Bone mixamorig_Hips/CollisionShape3D/Tracker 302064412476032"), NodePath("../../Physical Bone mixamorig_Spine/CollisionShape3D/Tracker 302064429251782"), NodePath("../CollisionShape3D/Tracker 302064446030489"), NodePath("../../Physical Bone mixamorig_Spine2/CollisionShape3D/Tracker 302064462810416"), NodePath("../../Physical Bone mixamorig_Neck/CollisionShape3D/Tracker 302064479583462"), NodePath("../../Physical Bone mixamorig_Head/CollisionShape3D/Tracker 302064496365160"), NodePath("../../Physical Bone mixamorig_LeftShoulder/CollisionShape3D/Tracker 302064513137845"), NodePath("../../Physical Bone mixamorig_LeftArm/CollisionShape3D/Tracker 302064529916204"), NodePath("../../Physical Bone mixamorig_LeftForeArm/CollisionShape3D/Tracker 302064546692275"), NodePath("../../Physical Bone mixamorig_LeftHand/CollisionShape3D/Tracker 302064563473888"), NodePath("../../Physical Bone mixamorig_RightShoulder/CollisionShape3D/Tracker 302064580248014"), NodePath("../../Physical Bone mixamorig_RightArm/CollisionShape3D/Tracker 302064597028376"), NodePath("../../Physical Bone mixamorig_RightForeArm/CollisionShape3D/Tracker 302064613802629"), NodePath("../../Physical Bone mixamorig_RightHand/CollisionShape3D/Tracker 302064630579670"), NodePath("../../Physical Bone mixamorig_LeftUpLeg/CollisionShape3D/Tracker 302064647357002"), NodePath("../../Physical Bone mixamorig_LeftLeg/CollisionShape3D/Tracker 302064664137229"), NodePath("../../Physical Bone mixamorig_LeftFoot/CollisionShape3D/Tracker 302064680911437"), NodePath("../../Physical Bone mixamorig_RightUpLeg/CollisionShape3D/Tracker 302064697691846"), NodePath("../../Physical Bone mixamorig_RightLeg/CollisionShape3D/Tracker 302064714465867"), NodePath("../../Physical Bone mixamorig_RightFoot/CollisionShape3D/Tracker 302064731246061")]
 
 [node name="Physical Bone mixamorig_Spine2" type="PhysicalBone3D" parent="Character Test/Y Bot/Skeleton3D/PhysicalBoneSimulator3D"]
-transform = Transform3D(-1, -3.34454e-05, 8.55827e-05, -8.72256e-05, 0.052675, -0.998612, 2.88908e-05, -0.998612, -0.052675, -2.87524e-05, 1.42237, -0.0387962)
+transform = Transform3D(-1, -3.34453e-05, 8.55827e-05, -8.72256e-05, 0.052675, -0.998612, 2.88908e-05, -0.998612, -0.052675, -2.87524e-05, 1.42237, -0.0387962)
 joint_type = 1
-joint_offset = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.06941e-08, -6.89179e-08, 0.075267)
-body_offset = Transform3D(-1, -2.90519e-05, -1.57285e-06, -1.24179e-07, 0.0583217, -0.998298, 2.90942e-05, -0.998298, -0.0583217, 1.79076e-07, 0.0751389, 0.00438963)
+joint_offset = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.07083e-08, -6.93835e-08, 0.075267)
+body_offset = Transform3D(-1, -2.90519e-05, -1.57285e-06, -1.24179e-07, 0.0583217, -0.998298, 2.90942e-05, -0.998298, -0.0583217, 1.7909e-07, 0.0751389, 0.00438963)
 bone_name = "mixamorig_Spine2"
 joint_constraints/bias = 0.3
 joint_constraints/damping = 1.0
@@ -877,10 +877,10 @@ script = ExtResource("4_b2tqu")
 _target = NodePath("..")
 
 [node name="Physical Bone mixamorig_Neck" type="PhysicalBone3D" parent="Character Test/Y Bot/Skeleton3D/PhysicalBoneSimulator3D"]
-transform = Transform3D(-1, -2.59909e-05, 8.33078e-05, -8.7266e-05, 0.291246, -0.956648, 6.01073e-07, -0.956648, -0.291246, -1.18823e-05, 1.54914, -0.0157998)
+transform = Transform3D(-1, -2.59909e-05, 8.33078e-05, -8.7266e-05, 0.291246, -0.956648, 6.01073e-07, -0.956648, -0.291246, -1.18779e-05, 1.54914, -0.0157992)
 joint_type = 1
-joint_offset = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.78466e-05, 0.00317594, 0.0549148)
-body_offset = Transform3D(-1, -7.69781e-07, -2.34347e-07, 2.50839e-15, 0.291246, -0.956648, 8.04663e-07, -0.956648, -0.291246, 2.78619e-05, 0.0516092, 0.019032)
+joint_offset = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.7851e-05, 0.00317653, 0.054915)
+body_offset = Transform3D(-1, -7.69781e-07, -2.34347e-07, 2.50839e-15, 0.291246, -0.956648, 8.04663e-07, -0.956648, -0.291246, 2.78663e-05, 0.0516092, 0.0190326)
 bone_name = "mixamorig_Neck"
 joint_constraints/bias = 0.3
 joint_constraints/damping = 1.0
@@ -900,10 +900,10 @@ script = ExtResource("4_b2tqu")
 _target = NodePath("..")
 
 [node name="Physical Bone mixamorig_Head" type="PhysicalBone3D" parent="Character Test/Y Bot/Skeleton3D/PhysicalBoneSimulator3D"]
-transform = Transform3D(-1, -5.12253e-05, 7.43562e-05, -8.72958e-05, 0.338066, -0.941122, 2.3072e-05, -0.941122, -0.338066, -7.26591e-05, 1.69313, 0.0297745)
+transform = Transform3D(-1, -5.12253e-05, 7.43561e-05, -8.72958e-05, 0.338066, -0.941122, 2.3072e-05, -0.941122, -0.338066, -7.26613e-05, 1.69313, 0.0297745)
 joint_type = 1
-joint_offset = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.11361e-05, 1.11759e-08, 0.0981524)
-body_offset = Transform3D(-1, -2.19153e-05, -7.84063e-06, -2.98022e-08, 0.338066, -0.941122, 2.32756e-05, -0.941122, -0.338066, -2.03665e-05, 0.0923734, 0.033182)
+joint_offset = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.11383e-05, 3.72529e-09, 0.0981524)
+body_offset = Transform3D(-1, -2.19153e-05, -7.84063e-06, -2.98022e-08, 0.338066, -0.941122, 2.32756e-05, -0.941122, -0.338066, -2.03687e-05, 0.0923734, 0.033182)
 bone_name = "mixamorig_Head"
 joint_constraints/bias = 0.3
 joint_constraints/damping = 1.0
@@ -925,8 +925,8 @@ _target = NodePath("..")
 [node name="Physical Bone mixamorig_LeftShoulder" type="PhysicalBone3D" parent="Character Test/Y Bot/Skeleton3D/PhysicalBoneSimulator3D"]
 transform = Transform3D(-0.20123, -0.0209225, -0.97932, 0.0042101, -0.999781, 0.0204945, -0.979535, 1.07393e-06, 0.201274, 0.124302, 1.43697, -0.0487097)
 joint_type = 1
-joint_offset = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.29452e-07, -2.20474e-05, 0.0646111)
-body_offset = Transform3D(1, -6.59865e-07, -4.47035e-07, -3.57628e-07, -1.30473e-07, -1, 6.16903e-07, 1, -9.74944e-08, -1.00583e-07, 0.0646111, 2.20537e-05)
+joint_offset = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.25726e-07, -2.20474e-05, 0.0646111)
+body_offset = Transform3D(1, -6.59865e-07, -4.47035e-07, -3.57628e-07, -1.30473e-07, -1, 6.16903e-07, 1, -9.74944e-08, -9.68575e-08, 0.0646111, 2.20537e-05)
 bone_name = "mixamorig_LeftShoulder"
 joint_constraints/bias = 0.3
 joint_constraints/damping = 1.0
@@ -969,10 +969,10 @@ script = ExtResource("4_b2tqu")
 _target = NodePath("..")
 
 [node name="Physical Bone mixamorig_LeftForeArm" type="PhysicalBone3D" parent="Character Test/Y Bot/Skeleton3D/PhysicalBoneSimulator3D"]
-transform = Transform3D(-8.67782e-07, 8.77455e-05, -1, -4.76837e-07, -1, -8.77455e-05, -1, 4.76761e-07, 8.67823e-07, 0.59935, 1.44362, -0.0625)
+transform = Transform3D(-8.67798e-07, 8.77455e-05, -1, -4.76837e-07, -1, -8.77455e-05, -1, 4.76761e-07, 8.6784e-07, 0.59935, 1.44362, -0.0625)
 joint_type = 1
 joint_offset = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.000785165, 0.00791025, 0.137725)
-body_offset = Transform3D(1, -6.42739e-08, -2.63334e-07, -1.81857e-07, -1.49015e-08, -1, 1.83827e-08, 1, -1.41541e-11, 0.000785202, 0.137725, -0.00791025)
+body_offset = Transform3D(1, -6.42739e-08, -2.63351e-07, -1.81874e-07, -1.49015e-08, -1, 1.83827e-08, 1, -1.41541e-11, 0.000785202, 0.137725, -0.00791025)
 bone_name = "mixamorig_LeftForeArm"
 joint_constraints/bias = 0.3
 joint_constraints/damping = 1.0
@@ -992,10 +992,10 @@ script = ExtResource("4_b2tqu")
 _target = NodePath("..")
 
 [node name="Physical Bone mixamorig_LeftHand" type="PhysicalBone3D" parent="Character Test/Y Bot/Skeleton3D/PhysicalBoneSimulator3D"]
-transform = Transform3D(-7.21102e-05, 0.694513, -0.71948, 0.851198, 0.377657, 0.364467, 0.524844, -0.612394, -0.591196, 0.766179, 1.41953, -0.0505778)
+transform = Transform3D(-7.21103e-05, 0.694514, -0.71948, 0.851203, 0.377652, 0.364462, 0.524836, -0.612397, -0.591199, 0.766197, 1.41953, -0.0505778)
 joint_type = 1
-joint_offset = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00793481, -0.0067966, 0.0329225)
-body_offset = Transform3D(-0.524844, 0.612393, 0.591196, 2.23123e-06, 0.694547, -0.719447, -0.851198, -0.377597, -0.36453, -0.0111369, 0.0284066, 0.016189)
+joint_offset = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.007935, -0.00680933, 0.0329356)
+body_offset = Transform3D(-0.524837, 0.612396, 0.591199, 2.23161e-06, 0.694547, -0.719447, -0.851203, -0.377591, -0.364525, -0.0111369, 0.0284248, 0.016189)
 bone_name = "mixamorig_LeftHand"
 joint_constraints/bias = 0.3
 joint_constraints/damping = 1.0
@@ -1014,7 +1014,7 @@ script = ExtResource("4_b2tqu")
 _target = NodePath("..")
 
 [node name="Physical Bone mixamorig_RightShoulder" type="PhysicalBone3D" parent="Character Test/Y Bot/Skeleton3D/PhysicalBoneSimulator3D"]
-transform = Transform3D(-0.201226, 0.021103, 0.979317, -0.00424722, -0.999777, 0.0206712, 0.979536, 2.17743e-07, 0.201271, -0.124359, 1.43686, -0.0487097)
+transform = Transform3D(-0.201226, 0.021103, 0.979317, -0.00424722, -0.999777, 0.0206712, 0.979536, 2.17287e-07, 0.201271, -0.124359, 1.43686, -0.0487097)
 joint_type = 1
 joint_offset = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.58755e-07, -0.000109618, 0.0646104)
 body_offset = Transform3D(1, 3.48795e-07, -7.45058e-08, -1.19209e-07, 8.70733e-07, -1, -2.73171e-07, 1, 9.98942e-07, -3.53903e-07, 0.0646104, 0.000109553)
@@ -1039,7 +1039,7 @@ _target = NodePath("..")
 [node name="Physical Bone mixamorig_RightArm" type="PhysicalBone3D" parent="Character Test/Y Bot/Skeleton3D/PhysicalBoneSimulator3D"]
 transform = Transform3D(7.46752e-08, 8.65124e-05, 1, 1.73462e-07, -1, 8.65124e-05, 1, 1.73455e-07, -7.46903e-08, -0.324661, 1.43563, -0.0625)
 joint_type = 1
-joint_offset = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.000785949, 2.19556e-07, 0.137023)
+joint_offset = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.000785949, 2.19557e-07, 0.137023)
 body_offset = Transform3D(1, 1.27832e-07, -1.6172e-08, -1.49012e-08, 2.6077e-08, -1, -2.98023e-08, 1, 1.37828e-07, -0.000785947, 0.137023, -2.38419e-07)
 bone_name = "mixamorig_RightArm"
 joint_constraints/bias = 0.3
@@ -1060,10 +1060,10 @@ script = ExtResource("4_b2tqu")
 _target = NodePath("..")
 
 [node name="Physical Bone mixamorig_RightForeArm" type="PhysicalBone3D" parent="Character Test/Y Bot/Skeleton3D/PhysicalBoneSimulator3D"]
-transform = Transform3D(5.36618e-07, 8.71047e-05, 1, 9.04406e-08, -1, 8.71047e-05, 1, 9.03939e-08, -5.36626e-07, -0.594008, 1.43945, -0.0587563)
+transform = Transform3D(5.36618e-07, 8.71047e-05, 1, 9.04363e-08, -1, 8.71047e-05, 1, 9.03896e-08, -5.36626e-07, -0.594008, 1.43945, -0.0587563)
 joint_type = 1
-joint_offset = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.00295768, 0.00384981, 0.132323)
-body_offset = Transform3D(1, 4.47705e-08, -4.78108e-07, -4.76837e-07, -5.66244e-07, -1, 5.3259e-08, 1, -4.54493e-07, 0.00295774, 0.132323, -0.00384974)
+joint_offset = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.00295768, 0.0038498, 0.132323)
+body_offset = Transform3D(1, 4.47662e-08, -4.78108e-07, -4.76837e-07, -5.66244e-07, -1, 5.32633e-08, 1, -4.54493e-07, 0.00295774, 0.132323, -0.00384974)
 bone_name = "mixamorig_RightForeArm"
 joint_constraints/bias = 0.3
 joint_constraints/damping = 1.0
@@ -1083,10 +1083,10 @@ script = ExtResource("4_b2tqu")
 _target = NodePath("..")
 
 [node name="Physical Bone mixamorig_RightHand" type="PhysicalBone3D" parent="Character Test/Y Bot/Skeleton3D/PhysicalBoneSimulator3D"]
-transform = Transform3D(6.93621e-05, -0.752732, 0.658328, -0.810893, 0.385208, 0.440532, -0.585195, -0.533864, -0.610358, -0.779908, 1.42283, -0.0463132)
+transform = Transform3D(6.93621e-05, -0.752736, 0.658323, -0.810893, 0.385205, 0.440534, -0.585195, -0.53386, -0.610361, -0.779889, 1.42283, -0.0463132)
 joint_type = 1
-joint_offset = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.00133456, -0.0185348, 0.0427237)
-body_offset = Transform3D(-0.585195, -0.533864, -0.610358, 7.76361e-07, 0.752698, -0.658366, 0.810893, -0.385273, -0.440475, 0.0154007, 0.042079, 0.0127599)
+joint_offset = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.00133445, -0.0185215, 0.0427116)
+body_offset = Transform3D(-0.585195, -0.53386, -0.610361, 7.76354e-07, 0.752702, -0.658361, 0.810893, -0.38527, -0.440477, 0.0154007, 0.0420608, 0.0127598)
 bone_name = "mixamorig_RightHand"
 joint_constraints/bias = 0.3
 joint_constraints/damping = 1.0
@@ -1105,10 +1105,10 @@ script = ExtResource("4_b2tqu")
 _target = NodePath("..")
 
 [node name="Physical Bone mixamorig_LeftUpLeg" type="PhysicalBone3D" parent="Character Test/Y Bot/Skeleton3D/PhysicalBoneSimulator3D"]
-transform = Transform3D(-0.999982, 7.54263e-05, -0.00602854, -0.00602901, -0.0126989, 0.999901, -1.13663e-06, 0.999919, 0.0126991, 0.0924655, 0.728287, -0.00313684)
+transform = Transform3D(-0.999982, 7.54263e-05, -0.00602854, -0.00602901, -0.0126989, 0.999901, -1.13664e-06, 0.999919, 0.0126991, 0.0924655, 0.728287, -0.00313684)
 joint_type = 1
-joint_offset = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.26474e-06, 4.57722e-06, 0.203088)
-body_offset = Transform3D(1, 4.03058e-07, 2.35476e-06, 2.35485e-06, -1.07195e-06, -1, -4.03052e-07, 1, -1.07195e-06, 2.78652e-06, 0.203088, -4.35952e-06)
+joint_offset = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.26456e-06, 4.57722e-06, 0.203088)
+body_offset = Transform3D(1, 4.03065e-07, 2.35383e-06, 2.35485e-06, -1.07195e-06, -1, -4.03057e-07, 1, -1.07195e-06, 2.78652e-06, 0.203088, -4.35952e-06)
 bone_name = "mixamorig_LeftUpLeg"
 joint_constraints/bias = 0.3
 joint_constraints/damping = 1.0
@@ -1128,10 +1128,10 @@ script = ExtResource("4_b2tqu")
 _target = NodePath("..")
 
 [node name="Physical Bone mixamorig_LeftLeg" type="PhysicalBone3D" parent="Character Test/Y Bot/Skeleton3D/PhysicalBoneSimulator3D"]
-transform = Transform3D(-0.999983, -0.000284869, 0.0058125, 0.00581948, -0.0489111, 0.998786, -2.27405e-07, 0.998803, 0.048912, 0.0924676, 0.315162, -0.0160064)
+transform = Transform3D(-0.999983, -0.000284869, 0.0058125, 0.00581948, -0.0489111, 0.998786, -2.27402e-07, 0.998803, 0.048912, 0.0924676, 0.315162, -0.0160064)
 joint_type = 1
-joint_offset = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.88088e-08, 1.22071e-06, 0.210495)
-body_offset = Transform3D(1, -4.65837e-07, -2.32812e-07, -2.34281e-07, -2.34693e-07, -1, 4.65832e-07, 1, -2.42144e-07, -2.98023e-08, 0.210495, -1.16974e-06)
+joint_offset = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.88086e-08, 1.22071e-06, 0.210495)
+body_offset = Transform3D(1, -4.65837e-07, -2.32812e-07, -2.34281e-07, -2.34693e-07, -1, 4.65834e-07, 1, -2.42144e-07, -2.98023e-08, 0.210495, -1.16974e-06)
 bone_name = "mixamorig_LeftLeg"
 joint_constraints/bias = 0.3
 joint_constraints/damping = 1.0
@@ -1151,10 +1151,10 @@ script = ExtResource("4_b2tqu")
 _target = NodePath("..")
 
 [node name="Physical Bone mixamorig_LeftFoot" type="PhysicalBone3D" parent="Character Test/Y Bot/Skeleton3D/PhysicalBoneSimulator3D"]
-transform = Transform3D(-0.998661, -0.0459655, -0.0237534, -0.0517403, 0.887159, 0.458553, -4.54765e-06, 0.459168, -0.888349, 0.0931108, 0.0688794, 0.0435318)
+transform = Transform3D(-0.998661, -0.0459655, -0.0237534, -0.0517403, 0.887159, 0.458553, -4.54754e-06, 0.459168, -0.888349, 0.0931108, 0.0688794, 0.0435318)
 joint_type = 1
-joint_offset = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.22371e-07, -3.43274e-06, 0.0786078)
-body_offset = Transform3D(1, -5.58524e-06, -7.13828e-06, -7.13315e-06, 4.51207e-05, -1, 5.57809e-06, 1, 4.50909e-05, 9.83477e-07, 0.0786078, -1.11759e-07)
+joint_offset = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.22518e-07, -3.43273e-06, 0.0786078)
+body_offset = Transform3D(1, -5.58524e-06, -7.13642e-06, -7.13305e-06, 4.51207e-05, -1, 5.57814e-06, 1, 4.50909e-05, 9.83477e-07, 0.0786078, -1.11759e-07)
 bone_name = "mixamorig_LeftFoot"
 joint_constraints/bias = 0.3
 joint_constraints/damping = 1.0
@@ -1174,10 +1174,10 @@ script = ExtResource("4_b2tqu")
 _target = NodePath("..")
 
 [node name="Physical Bone mixamorig_RightUpLeg" type="PhysicalBone3D" parent="Character Test/Y Bot/Skeleton3D/PhysicalBoneSimulator3D"]
-transform = Transform3D(-0.999982, -7.3757e-05, 0.00602356, 0.00602401, -0.0126328, 0.999902, 2.34464e-06, 0.99992, 0.012633, -0.092203, 0.730443, -0.00355021)
+transform = Transform3D(-0.999982, -7.37577e-05, 0.00602356, 0.00602401, -0.0126328, 0.999902, 2.34395e-06, 0.99992, 0.012633, -0.092203, 0.730443, -0.00355021)
 joint_type = 1
-joint_offset = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00025191, 0.000458456, 0.200936)
-body_offset = Transform3D(1, -3.09504e-06, 3.68381e-06, 3.68395e-06, -3.44142e-05, -1, 3.09517e-06, 1, -3.44142e-05, -0.000252649, 0.200936, -0.000451542)
+joint_offset = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00025191, 0.000458457, 0.200936)
+body_offset = Transform3D(1, -3.09434e-06, 3.68287e-06, 3.68303e-06, -3.44142e-05, -1, 3.09447e-06, 1, -3.44142e-05, -0.000252649, 0.200936, -0.000451543)
 bone_name = "mixamorig_RightUpLeg"
 joint_constraints/bias = 0.3
 joint_constraints/damping = 1.0
@@ -1197,10 +1197,10 @@ script = ExtResource("4_b2tqu")
 _target = NodePath("..")
 
 [node name="Physical Bone mixamorig_RightLeg" type="PhysicalBone3D" parent="Character Test/Y Bot/Skeleton3D/PhysicalBoneSimulator3D"]
-transform = Transform3D(-0.999983, 0.000312203, -0.00580872, -0.00581704, -0.0489411, 0.998785, 2.75381e-05, 0.998802, 0.0489421, -0.0926497, 0.31516, -0.0159906)
+transform = Transform3D(-0.999983, 0.000312206, -0.00580872, -0.00581704, -0.0489411, 0.998785, 2.75412e-05, 0.998802, 0.0489421, -0.0926497, 0.31516, -0.0159906)
 joint_type = 1
 joint_offset = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.000180793, -7.7287e-06, 0.210495)
-body_offset = Transform3D(1, -2.81518e-05, -2.52852e-06, -2.52877e-06, -2.902e-06, -1, 2.81519e-05, 1, -2.902e-06, 0.000181325, 0.210495, 8.34465e-06)
+body_offset = Transform3D(1, -2.81549e-05, -2.52899e-06, -2.52892e-06, -2.902e-06, -1, 2.8155e-05, 1, -2.902e-06, 0.000181325, 0.210495, 8.34465e-06)
 bone_name = "mixamorig_RightLeg"
 joint_constraints/bias = 0.3
 joint_constraints/damping = 1.0
@@ -1220,10 +1220,10 @@ script = ExtResource("4_b2tqu")
 _target = NodePath("..")
 
 [node name="Physical Bone mixamorig_RightFoot" type="PhysicalBone3D" parent="Character Test/Y Bot/Skeleton3D/PhysicalBoneSimulator3D"]
-transform = Transform3D(-0.99866, 0.0459815, 0.023764, 0.0517593, 0.88718, 0.458512, 1.17944e-07, 0.459127, -0.88837, -0.093113, 0.0688797, 0.0435314)
+transform = Transform3D(-0.99866, 0.0459829, 0.0237646, 0.0517609, 0.88718, 0.458512, 2.42784e-07, 0.459127, -0.888371, -0.093113, 0.0688797, 0.0435314)
 joint_type = 1
-joint_offset = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.32277e-07, 2.09268e-07, 0.0786081)
-body_offset = Transform3D(1, -9.21022e-06, -3.76791e-06, -3.76138e-06, -4.17233e-07, -1, 9.21031e-06, 1, -3.8743e-07, 1.63913e-07, 0.0786081, -1.78814e-07)
+joint_offset = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.79424e-07, 2.18638e-07, 0.0786081)
+body_offset = Transform3D(1, -1.06482e-05, -4.36768e-06, -4.36496e-06, -5.36442e-07, -1, 1.06501e-05, 1, -5.06639e-07, 1.63913e-07, 0.0786081, -1.78814e-07)
 bone_name = "mixamorig_RightFoot"
 joint_constraints/bias = 0.3
 joint_constraints/damping = 1.0

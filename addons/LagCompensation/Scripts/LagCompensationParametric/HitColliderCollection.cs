@@ -65,6 +65,8 @@ namespace PG.LagCompensation.Parametric
         /// </summary>
         private HitColliderGeneric[] hitColliders = new HitColliderGeneric[0];
 
+        public int GetHitColliderCount => hitColliders.Length;
+
         public HitColliderGeneric GetHitColliderAtIndex(int i)
 		{
             if (i >= hitColliders.Length || i < 0)
@@ -74,7 +76,6 @@ namespace PG.LagCompensation.Parametric
 
             }
             
-
             return hitColliders[i];
         }
 

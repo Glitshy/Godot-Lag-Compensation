@@ -7,7 +7,7 @@ namespace PG.LagCompensation.Parametric
 {
     [GlobalClass]
     [Tool]
-    public partial class HitColliderCapsule : HitColliderGeneric
+    public partial class HitColliderCylinder : HitColliderGeneric
     {
         
         private float _height = 2f;
@@ -61,6 +61,9 @@ namespace PG.LagCompensation.Parametric
         public float SetRadius { set => _radius = value; }
 
 
+        //public override float GetBoundingSphereRadius => Mathf.Sqrt(_height * _height * 0.25f + radius * radius); // pythagorean theorem
+        //public override float GetBoundingSphereRadiusSquared => _height * _height * 0.25f + radius * radius; // pythagorean theorem squared
+
         public override float GetBoundingSphereRadius => _height * 0.5f;
         public override float GetBoundingSphereRadiusSquared => _height * _height * 0.25f;
 
@@ -72,22 +75,22 @@ namespace PG.LagCompensation.Parametric
                 return;
             }
 
-            CapsuleShape3D capsule = (CapsuleShape3D)col.Shape;
+            CylinderShape3D shape = (CylinderShape3D)col.Shape;
 
-            if (capsule == null)
+            if (shape == null)
             {
                 return;
             }
 
-            _radius = capsule.Radius;
-            _height = capsule.Height;
+            _radius = shape.Radius;
+            _height = shape.Height;
         }
 
         #region Raycasting
 
         public override bool ColliderCastLive(Vector3 rayOrigin, Vector3 rayDirection, float range, out ColliderCastHit hit)
         {
-            if (ParametricRaycastCapsule(GlobalPosition, GlobalQuaternion, _height, _radius, rayOrigin, rayDirection, out hit))
+            if (ParametricRaycastCylinder(GlobalPosition, GlobalQuaternion, _height, _radius, rayOrigin, rayDirection, out hit))
             {
                 return hit.entryDistance <= range && hit.entryDistance >= 0f;
             }
@@ -99,7 +102,7 @@ namespace PG.LagCompensation.Parametric
 
         public override bool ColliderCastCached(Vector3 rayOrigin, Vector3 rayDirection, float range, out ColliderCastHit hit)
         {
-            if (ParametricRaycastCapsule(_cachedPosRot.position, _cachedPosRot.rotation, _height, _radius, rayOrigin, rayDirection, out hit))
+            if (ParametricRaycastCylinder(_cachedPosRot.position, _cachedPosRot.rotation, _height, _radius, rayOrigin, rayDirection, out hit))
             {
                 return hit.entryDistance <= range && hit.entryDistance >= 0f;
             }
@@ -112,7 +115,7 @@ namespace PG.LagCompensation.Parametric
         /// <summary>
         /// Get global direction for height based on given global rotation
         /// </summary>
-        private static Vector3 GetCapsuleDirection(Quaternion _rotation)
+        private static Vector3 GetCylinderDirection(Quaternion _rotation)
         {
             return _rotation * Vector3.Up;
         }
@@ -120,18 +123,18 @@ namespace PG.LagCompensation.Parametric
         /// <summary>
         /// Get global direction for height based on current transform
         /// </summary>
-        private Vector3 GetCapsuleDirectionLive()
+        private Vector3 GetCylinderDirectionLive()
         {
             return GlobalBasis.Y;
         }
 
 
-        private static bool ParametricRaycastCapsule(Vector3 position, Quaternion rotation, float height, float radius, Vector3 o, Vector3 d, out ColliderCastHit hit)
+        private static bool ParametricRaycastCylinder(Vector3 position, Quaternion rotation, float height, float radius, Vector3 o, Vector3 d, out ColliderCastHit hit)
         {
             // using https://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
 
-            Vector3 _centerPosition = position;
-            Vector3 _capsuleDirection = GetCapsuleDirection(rotation);
+            Vector3 centerPosition = position;
+            Vector3 cylinderDirection = GetCylinderDirection(rotation);
 
 
 
@@ -139,8 +142,8 @@ namespace PG.LagCompensation.Parametric
 
             //d = d.normalized; // normalize direction vector
 
-            Vector3 a = _centerPosition - _capsuleDirection * (height * 0.5f - radius);
-            Vector3 b = _centerPosition + _capsuleDirection * (height * 0.5f - radius);
+            Vector3 a = centerPosition - cylinderDirection * height * 0.5f;
+            Vector3 b = centerPosition + cylinderDirection * height * 0.5f;
 
             Vector3 A = b - a;
             Vector3 k = a - o;
@@ -168,58 +171,61 @@ namespace PG.LagCompensation.Parametric
 
             if (!float.IsNaN(hit.entryDistance)) // we have an entry hit
             {
-                hit.entryPoint = o + hit.entryDistance * d; // entry point assuming we are in the cylinder region. Will be overriden if we are in spere "a" or sphere "b"
-                hit.exitPoint = o + hit.exitDistance * d; // exit point assuming we are in the cylinder region. Will be overriden if we are in spere "a" or sphere "b"
+                hit.entryPoint = o + hit.entryDistance * d; // entry point assuming we are in the cylinder region. Will be overriden if we are in plane "a" or plane "b"
+                hit.exitPoint = o + hit.exitDistance * d; // exit point assuming we are in the cylinder region. Will be overriden if we are in plane "a" or plane "b"
 
 
                 float t_entry = ColliderMath.GetTValueAlongLine(a, b, hit.entryPoint);
                 float t_exit = ColliderMath.GetTValueAlongLine(a, b, hit.exitPoint);
 
-                if (t_entry > 1f) // look at upper sphere (centered at "b")
+                if (t_entry > 1f) // look at upper plane (centered at "b")
                 {
-                    if (t_exit > 1f) // look at upper sphere (centered at "b")
+                    if (t_exit > 1f) // both intersect points are above the cylinder
                     {
-                        ParametricRaycastSphereBothSided(b, radius, o, d, out hit.entryPoint, out hit.entryNormal, out hit.entryDistance, out hit.exitPoint, out hit.exitNormal, out hit.exitDistance);
+                        return false;
                     }
                     else
                     {
-                        if (ParametricRaycastSphereEntry(b, radius, o, d, out hit.entryPoint, out hit.entryNormal, out hit.entryDistance))
+                        hit.entryNormal = cylinderDirection;
+                        CircularPlaneIntersect(o, d, b, cylinderDirection, radius, out hit.entryDistance, out hit.entryPoint);
+
+                        if (t_exit > 0f) // we are in the cylinder range of the cylinder
                         {
-                            if (t_exit > 0f) // we are in the cylinder range of the capsule
-                            {
-                                Vector3 _closestPoint = a + t_exit * (b - a);
-                                hit.exitNormal = (hit.exitPoint - _closestPoint).Normalized();
-                            }
-                            else // look at lower sphere (centered at "a")
-                            {
-                                ParametricRaycastSphereExit(a, radius, o, d, out hit.exitPoint, out hit.exitNormal, out hit.exitDistance);
-                            }
+                            Vector3 _closestPoint = a + t_exit * (b - a);
+                            hit.exitNormal = (hit.exitPoint - _closestPoint).Normalized();
+                        }
+                        else // look at lower plane (centered at "a")
+                        {
+                            hit.exitNormal = -cylinderDirection;
+                            CircularPlaneIntersect(o, d, a, -cylinderDirection, radius, out hit.exitDistance, out hit.exitPoint);
                         }
                     }
                 }
-                else if (t_entry < 0f) // look at lower sphere (centered at "a")
+                else if (t_entry < 0f) // look at lower plane (centered at "a")
                 {
-                    if (t_exit < 0f) // look at lower sphere (centered at "a")
+                    if (t_exit < 0f) // both intersect points are below the cylinder
                     {
-                        ParametricRaycastSphereBothSided(a, radius, o, d, out hit.entryPoint, out hit.entryNormal, out hit.entryDistance, out hit.exitPoint, out hit.exitNormal, out hit.exitDistance);
+                        return false;
                     }
                     else
                     {
-                        if (ParametricRaycastSphereEntry(a, radius, o, d, out hit.entryPoint, out hit.entryNormal, out hit.entryDistance))
+                        hit.entryNormal = -cylinderDirection;
+                        CircularPlaneIntersect(o, d, a, -cylinderDirection, radius, out hit.entryDistance, out hit.entryPoint);
+                        
+                        if (t_exit < 1f) // we are in the cylinder range of the cylinder
                         {
-                            if (t_exit < 1f) // we are in the cylinder range of the capsule
-                            {
-                                Vector3 _closestPoint = a + t_exit * (b - a);
-                                hit.exitNormal = (hit.exitPoint - _closestPoint).Normalized();
-                            }
-                            else // look at upper sphere (centered at "b")
-                            {
-                                ParametricRaycastSphereExit(b, radius, o, d, out hit.exitPoint, out hit.exitNormal, out hit.exitDistance);
-                            }
+                            Vector3 _closestPoint = a + t_exit * (b - a);
+                            hit.exitNormal = (hit.exitPoint - _closestPoint).Normalized();
                         }
+                        else // look at upper plane (centered at "b")
+                        {
+                            hit.exitNormal = cylinderDirection;
+                            CircularPlaneIntersect(o, d, b, cylinderDirection, radius, out hit.exitDistance, out hit.exitPoint);
+                        }
+
                     }
                 }
-                else // we are in the cylinder range of the capsule
+                else // we are in the cylinder range of the cylinder
                 {
                     Vector3 _closestPoint = a + t_entry * (b - a);
 
@@ -227,15 +233,17 @@ namespace PG.LagCompensation.Parametric
                     //Debug.DrawLine(_closestPoint, _hit.entryPoint, Color.blue);
 
 
-                    if (t_exit > 1f) // look at upper sphere (centered at "b")
+                    if (t_exit > 1f) // look at upper plane (centered at "b")
                     {
-                        ParametricRaycastSphereExit(b, radius, o, d, out hit.exitPoint, out hit.exitNormal, out hit.exitDistance);
+                        hit.exitNormal = cylinderDirection;
+                        CircularPlaneIntersect(o, d, b, cylinderDirection, radius, out hit.exitDistance, out hit.exitPoint);
                     }
-                    else if (t_exit < 0f) // look at lower sphere (centered at "a")
+                    else if (t_exit < 0f) // look at lower plane (centered at "a")
                     {
-                        ParametricRaycastSphereExit(a, radius, o, d, out hit.exitPoint, out hit.exitNormal, out hit.exitDistance);
+                        hit.exitNormal = -cylinderDirection;
+                        CircularPlaneIntersect(o, d, a, -cylinderDirection, radius, out hit.exitDistance, out hit.exitPoint);
                     }
-                    else // we are in the cylinder range of the capsule
+                    else // we are in the cylinder range of the cylinder
                     {
                         _closestPoint = a + t_exit * (b - a);
                         hit.exitNormal = (hit.exitPoint - _closestPoint).Normalized();
@@ -262,7 +270,30 @@ namespace PG.LagCompensation.Parametric
 
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="rayOrigin">Ray origin</param>
+        /// <param name="rayDirection">Ray direction (must be normalized)</param>
+        /// <param name="t">Distance along ray for intersection</param>
+        /// <returns>Does the given ray intersect the given plane within the radius bounds?</returns>
+        public static bool CircularPlaneIntersect(in Vector3 rayOrigin, in Vector3 rayDirection, in Vector3 circleCenter, in Vector3 circleNormal, in float circleRadius, out float t, out Vector3 intersectPoint)
+        {
+            // based on answer to https://math.stackexchange.com/questions/3412199/how-to-calculate-the-intersection-point-of-a-vector-and-a-plane-defined-as-a-poi
 
+            t = ((circleCenter - rayOrigin).Dot(circleNormal)) / (rayDirection.Dot(circleNormal)); // t value along ray
+
+            intersectPoint = rayOrigin + t * rayDirection;
+
+            float distanceSquared = intersectPoint.DistanceSquaredTo(circleCenter);
+
+            if (t < 0f)
+            {
+                GD.Print("t= " + t + " center " + circleCenter + " circleNormal " + circleNormal + " intersect " + intersectPoint);
+            }
+
+            return (distanceSquared <= circleRadius * circleRadius);
+        }
 
         #endregion
 
@@ -273,7 +304,7 @@ namespace PG.LagCompensation.Parametric
 
         public override void DebugDraw(Vector3 position, Quaternion rotation, float duration, Color col, bool editorGizmo = false)
         {
-            ColliderDrawing.DebugDrawCapsule(position, rotation, _height, _radius, duration, col, editorGizmo);
+            ColliderDrawing.DebugDrawCylinder(position, rotation, _height, _radius, duration, col, editorGizmo);
         }
 
 

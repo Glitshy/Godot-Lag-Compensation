@@ -11,6 +11,7 @@ namespace PG.LagCompensation.Parametric
     /// <summary>
     /// Abstract parent class for colliders of parametric raycasts (no physics) with different shapes
     /// </summary>
+    [GlobalClass]
     public abstract partial class HitColliderGeneric : TrackerBase
     {
         public override Node3D GetTargetNode => this;

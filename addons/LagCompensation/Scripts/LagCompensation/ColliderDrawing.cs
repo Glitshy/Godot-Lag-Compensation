@@ -100,11 +100,11 @@ namespace PG.LagCompensation.Base
 
             Vector3 _planeDirection1 = _adjustedRotation * Vector3.Right;
             Vector3 _planeDirection2 = _adjustedRotation * Vector3.Up;
-            Vector3 _capusleDirection = _adjustedRotation * Vector3.Forward;
+            Vector3 _capsuleDirection = _adjustedRotation * Vector3.Forward;
             //Vector3 _capusleDirection = _trans.rotation * Vector3.up;
 
-            Vector3 _topCircleCenter = centerInGlobalSpace + _capusleDirection * (height * 0.5f - radius);
-            Vector3 _bottomCircleCenter = centerInGlobalSpace - _capusleDirection * (height * 0.5f - radius);
+            Vector3 _topCircleCenter = centerInGlobalSpace + _capsuleDirection * (height * 0.5f - radius);
+            Vector3 _bottomCircleCenter = centerInGlobalSpace - _capsuleDirection * (height * 0.5f - radius);
 
             DrawLine(_topCircleCenter + _planeDirection1 * radius, _bottomCircleCenter + _planeDirection1 * radius, color, duration, editorGizmo);
             DrawLine(_topCircleCenter - _planeDirection1 * radius, _bottomCircleCenter - _planeDirection1 * radius, color, duration, editorGizmo);
@@ -114,10 +114,35 @@ namespace PG.LagCompensation.Base
             DebugDrawCircle(_topCircleCenter, _planeDirection1, _planeDirection2, radius, duration, color, editorGizmo);
             DebugDrawCircle(_bottomCircleCenter, _planeDirection1, _planeDirection2, radius, duration, color, editorGizmo);
 
-            DebugDrawHalfCircle(_topCircleCenter, _planeDirection2, _capusleDirection, radius, duration, color, editorGizmo);
-            DebugDrawHalfCircle(_topCircleCenter, _planeDirection1, _capusleDirection, radius, duration, color, editorGizmo);
-            DebugDrawHalfCircle(_bottomCircleCenter, _planeDirection2, -_capusleDirection, radius, duration, color, editorGizmo);
-            DebugDrawHalfCircle(_bottomCircleCenter, _planeDirection1, -_capusleDirection, radius, duration, color, editorGizmo);
+            DebugDrawHalfCircle(_topCircleCenter, _planeDirection2, _capsuleDirection, radius, duration, color, editorGizmo);
+            DebugDrawHalfCircle(_topCircleCenter, _planeDirection1, _capsuleDirection, radius, duration, color, editorGizmo);
+            DebugDrawHalfCircle(_bottomCircleCenter, _planeDirection2, -_capsuleDirection, radius, duration, color, editorGizmo);
+            DebugDrawHalfCircle(_bottomCircleCenter, _planeDirection1, -_capsuleDirection, radius, duration, color, editorGizmo);
+        }
+
+        /// <summary>
+        /// Draw a cylinder. Oriented along the y-axis direction modified by the given rotation.
+        /// </summary>
+        public static void DebugDrawCylinder(Vector3 centerGlobal, Quaternion rotation, float height, float radius, float duration, Color color, bool editorGizmo = false)
+        {
+            Vector3 centerInGlobalSpace = centerGlobal;
+
+            Quaternion _adjustedRotation = GetCapsuleRotationWithGivenDirection(rotation);
+
+            Vector3 _planeDirection1 = _adjustedRotation * Vector3.Right;
+            Vector3 _planeDirection2 = _adjustedRotation * Vector3.Up;
+            Vector3 _cylinderDirection = _adjustedRotation * Vector3.Forward;
+
+            Vector3 _topCircleCenter = centerInGlobalSpace + _cylinderDirection * (height * 0.5f);
+            Vector3 _bottomCircleCenter = centerInGlobalSpace - _cylinderDirection * (height * 0.5f);
+
+            DrawLine(_topCircleCenter + _planeDirection1 * radius, _bottomCircleCenter + _planeDirection1 * radius, color, duration, editorGizmo);
+            DrawLine(_topCircleCenter - _planeDirection1 * radius, _bottomCircleCenter - _planeDirection1 * radius, color, duration, editorGizmo);
+            DrawLine(_topCircleCenter + _planeDirection2 * radius, _bottomCircleCenter + _planeDirection2 * radius, color, duration, editorGizmo);
+            DrawLine(_topCircleCenter - _planeDirection2 * radius, _bottomCircleCenter - _planeDirection2 * radius, color, duration, editorGizmo);
+
+            DebugDrawCircle(_topCircleCenter, _planeDirection1, _planeDirection2, radius, duration, color, editorGizmo);
+            DebugDrawCircle(_bottomCircleCenter, _planeDirection1, _planeDirection2, radius, duration, color, editorGizmo);
         }
 
         public static void DebugDrawBox(Vector3 position, Quaternion rotation, Vector3 size, float duration, Color color, bool editorGizmo = false)
@@ -158,6 +183,29 @@ namespace PG.LagCompensation.Base
             DrawLine(_LeftDownBackward, _RightDownBackward, color, duration, editorGizmo);
             DrawLine(_LeftDownBackward, _LeftUpBackward, color, duration, editorGizmo);
         }
+
+        /// <summary>
+        /// Draw a custom mesh by drawing the lines of each triangle
+        /// </summary>
+        public static void DebugDrawMesh(Vector3 position, Quaternion rotation, Vector3[] faceVertices, float duration, Color color, bool editorGizmo = false)
+        {
+            Vector3[] newVertices = new Vector3[faceVertices.Length];
+
+            for (int i = 0; i < newVertices.Length; i++)
+            {
+                // rotate and translate face vertice positions
+                newVertices[i] = position + rotation * faceVertices[i];
+            }
+
+            // draw triangle faces, consisting of 3 vertices each
+            for (int i = 0; i < newVertices.Length; i+=3)
+            {
+                DrawLine(newVertices[i], newVertices[i + 1], color, duration, editorGizmo); // face vertice 0 and 1
+                DrawLine(newVertices[i + 1], newVertices[i + 2], color, duration, editorGizmo); // face vertice 1 and 2
+                DrawLine(newVertices[i + 2], newVertices[i], color, duration, editorGizmo); // face vertice 2 and 0
+            }
+        }
+
 
         #endregion
     }
