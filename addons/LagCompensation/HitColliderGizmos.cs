@@ -138,7 +138,7 @@ namespace PG.LagCompensation.Parametric
                 handleIds[i] = i;
             }
 
-            gizmo.AddHandles(handles, GetMaterial("handles", gizmo), handleIds); // currently, no handles are used
+            gizmo.AddHandles(handles, GetMaterial("handles", gizmo), handleIds);
         }
 
         private void DrawTrackerBoundingSphere(EditorNode3DGizmo gizmo, Node3D node, string lineMaterial)
@@ -230,6 +230,31 @@ namespace PG.LagCompensation.Parametric
 
                 node.GlobalPosition = node.GlobalPosition + (globalHandlePosition - node.GlobalPosition) * (newRadius / oldRadius - 1);
             }
+            else if (hitCol is HitColliderCylinder cylinder)
+            {
+                float radius = cylinder.GetRadius;
+                float height = cylinder.GetHeight;
+
+                float oldRadius;
+                float newRadius;
+
+                if (handleId == 1 || handleId == 4) // y-axis
+                {
+                    oldRadius = cylinder.GetHeight * 0.5f;
+                    newRadius = Mathf.Max(oldRadius * scaleFactor, 0.00001f); // prevent going to or below zero
+
+                    cylinder.SetHeight = newRadius * 2f;
+                }
+                else
+                {
+                    oldRadius = cylinder.GetRadius;
+                    newRadius = Mathf.Max(oldRadius * scaleFactor, 0.00001f); // prevent going to or below zero
+
+                    cylinder.SetRadius = newRadius;
+                }
+
+                node.GlobalPosition = node.GlobalPosition + (globalHandlePosition - node.GlobalPosition) * (newRadius / oldRadius - 1);
+            }
             else if (hitCol is HitColliderBox box)
             {
                 Vector3 size = box.GetSize;
@@ -309,6 +334,21 @@ namespace PG.LagCompensation.Parametric
                 float height = capsule.GetHeight;
 
                 
+                if (direction.Y == 0)
+                {
+                    return direction * radius;
+                }
+                else
+                {
+                    return direction * height * 0.5f;
+                }
+            }
+            else if (hitCol is HitColliderCylinder cylinder)
+            {
+                float radius = cylinder.GetRadius;
+                float height = cylinder.GetHeight;
+
+
                 if (direction.Y == 0)
                 {
                     return direction * radius;

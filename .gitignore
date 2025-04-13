@@ -5,3 +5,4 @@
 
 # For IDE stuff, e.g. ignore Visual studio
 .vs/
+Godot-Lag-Compensation.csproj.old.1

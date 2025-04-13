@@ -62,7 +62,7 @@ radius = 0.55
 mesh = SubResource("CapsuleMesh_vtlpm")
 
 [node name="C_Cylinder" type="Node3D" parent="Colliders/Collection"]
-transform = Transform3D(0.69343, 0.633278, -0.343676, -0.674354, 0.738408, 0, 0.253773, 0.231759, 0.939088, 1.00077, 0.671017, 1.28784)
+transform = Transform3D(0.69343, 0.633278, -0.343676, -0.674354, 0.738408, 0, 0.253773, 0.231759, 0.939088, 1.13759, 0.761975, 1.41825)
 script = ExtResource("5_jp5my")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Colliders/Collection/C_Cylinder"]
