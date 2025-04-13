@@ -1,3 +1,10 @@
+# Raycast Lag Compensation
+![Version](https://img.shields.io/badge/version-1.1-blue.svg)
+$~~~~~$
+![Engine](https://img.shields.io/badge/Godot-%23FFFFFF.svg?logo=godot-engine)
+![Engine_Version](https://img.shields.io/badge/4.4-white.svg)
+
+
 <div align="center">
   <img src="addons/LagCompensation/icon.svg">
 </div>
@@ -18,10 +25,13 @@ Unity Engine version can be found [here](https://github.com/Glitshy/Lag-Compensa
 # What's included
 This project contains two systems: 
 - My initial approach which functions by setting the transforms of each individual CollisionShape3D of each player to the postion and rotation it was a given time ago (effectively replaced by the third system)
-- My second approach with custom collider nodes (sphere, capsule and box similar to native Godot's physics CollisionShape3D) and my own raycasting maths called "collider cast"
+- My second approach with custom collider nodes (sphere, capsule, cylinder and box similar to native Godot's physics CollisionShape3D, as well as a custom mesh shape) and my own raycasting maths called "collider cast"
 - My third approach which uses physical collision shapes (like the first approach) but bundles them in collections (like the second approach) and first checks the bounding sphere of the collection before updating the transforms
 
-Two example scenes, one for testing the custom hit detection / raycasting maths and one for comparing the two systems for the purpose of lag compensation and performance.
+Two example scenes:
+- One for testing the custom hit detection / raycasting maths for all the available shapes, as well as a "collider cast" performance test of the different shapes (spheres perform the best, custom meshes with many trinagles the worst)
+- One for comparing the two systems for the purpose of lag compensation and performance.
+
 Code is (somewhat) documented and there is some explanation text in the lag compensation scene.
 
 Uses C# Debug Draw for visualizing colliders https://github.com/Big-Burden/godot-debug-draw
@@ -30,7 +40,7 @@ Uses C# Debug Draw for visualizing colliders https://github.com/Big-Burden/godot
 Why did I go through the effort of writing my own raycasting system and using custom colliders? 
 
 When moving the transform of a CollisionShape3D and doing a raycast in the same frame, it does not hit at the new position (at least with default physics). This does however work with Jolt Physics. However, moving the transforms has rather poor performance in comparison to a custom solution.
-This is a computationally non-trivial task, expecially with many colliders (i.e. many players).
+This is a computationally non-trivial task, especially with many colliders (i.e. many players).
 There is also an example scene included where the performance of the second/third system can be directly compared.
 
 # How the "NetworkTracker" and the "NetworkTrackerSystem" works (using native godot CollisionShape3D)
@@ -49,7 +59,7 @@ With a lag delay of ~300 ms (extreme example) and a fixed update rate of 50/s, t
 Parent class of all HitColliders. Implements timestamps and some shared functions.
 
 ## "HitColliderGeneric"
-Inherits from the abstract class "TrackerBase". Is itself also an abstract calls from which "HitColliderSphere", "HitColliderCapsule" and "HitColliderBox" inherit.
+Inherits from the abstract class "TrackerBase". Is itself also an abstract calls from which "HitColliderSphere", "HitColliderCapsule", "HitColliderCylinder", "HitColliderBox" and "HitColliderMesh" inherit.
 The transforms of these colliders are never overridden as the custom hit detection code allows passing arbitrary positions and rotations as parameters.
 
 ## "HitColliderCollection"
@@ -89,7 +99,8 @@ summedTimePhysicalSimple 1.75s
 
 Note that the "Physical Simple" approach has very similar performance independent of whether a ray actually hits any colliders or not, while the other two will perform even better when not hit.
 
-The reason why one might consider the hybrid apporach is  because this supports arbitrarily shaped mesh collision shapes as well, while the custom HitColliders currently only support capsule, box and sphere shapes. Also, when raycasting anyways for collision checks with static environment, this apporach also might appear more appealing and the optimized solution includion collection bound sphere checking offers moderate performance.
+~The reason why one might consider the hybrid apporach is  because this supports arbitrarily shaped mesh collision shapes as well, while the custom HitColliders currently only support capsule, box and sphere shapes.~ Update: As of Version 1.1, cylinder and custom mesh shape HitColliders are available.
+Also, when raycasting anyways for collision checks with static environment, this apporach also might appear more appealing and the optimized solution includion collection bound sphere checking offers moderate performance.
 
-# Unity Version
-Created with Godot Version 4.4, but should work with any newer version and possibly older 4.X most older versions as well. Before 4.4, Jolt Physics was not included by default however and is needed for collision shape transform updates to immediately be valid for raycasts.
+# Engine Version
+Created with Godot Version 4.4, but should work with any newer version but porbably not older 4.X most older versions, as this uses the editor buttons which were introducted in 4.4. Before 4.4, Jolt Physics was not included by default however and is needed for collision shape transform updates to immediately be valid for raycasts.
