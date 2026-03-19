@@ -68,6 +68,7 @@ namespace PG.LagCompensation.Parametric
             ColliderCastHit newHit;
             collection = null;
             hitColliderIndex = -1;
+            int newHitColliderIndex;
 
             for (int i = 0; i < _simulationObjects.Count; i++)
             {
@@ -83,12 +84,13 @@ namespace PG.LagCompensation.Parametric
                 {
                     if (_simulationObjects[i].CheckBoundingSphereDistanceLive(origin, direction, range))
                     {
-                        if (_simulationObjects[i].ColliderCastLive(origin, direction, range, out newHit, out hitColliderIndex))
+                        if (_simulationObjects[i].ColliderCastLive(origin, direction, range, out newHit, out newHitColliderIndex))
                         {
                             if (newHit.entryDistance < hit.entryDistance)
-							{
+                            {
                                 collection = _simulationObjects[i];
                                 hit = newHit;
+                                hitColliderIndex = newHitColliderIndex;
                             }
                                 
                         }
@@ -119,6 +121,7 @@ namespace PG.LagCompensation.Parametric
             ColliderCastHit newHit;
             collection = null;
             hitColliderIndex = -1;
+            int newHitColliderIndex;
 
             for (int i = 0; i < _simulationObjects.Count; i++)
             {
@@ -136,12 +139,13 @@ namespace PG.LagCompensation.Parametric
                     {
                         _simulationObjects[i].SimulateFully(); // cache the locations/rotations of all managed hitColliders (if it hasn't been done already)
 
-                        if (_simulationObjects[i].ColliderCastCached(origin, direction, range, out newHit, out hitColliderIndex))
+                        if (_simulationObjects[i].ColliderCastCached(origin, direction, range, out newHit, out newHitColliderIndex))
                         {
                             if (newHit.entryDistance < hit.entryDistance)
                             {
                                 collection = _simulationObjects[i];
                                 hit = newHit;
+                                hitColliderIndex = newHitColliderIndex;
                             }
                         }
                     }

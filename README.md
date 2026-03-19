@@ -1,5 +1,5 @@
 # Raycast Lag Compensation
-![Version](https://img.shields.io/badge/version-1.1-blue.svg)
+![Version](https://img.shields.io/badge/version-1.2-blue.svg)
 $~~~~~$
 ![Engine](https://img.shields.io/badge/Godot-%23FFFFFF.svg?logo=godot-engine)
 ![Engine_Version](https://img.shields.io/badge/4.4-white.svg)
