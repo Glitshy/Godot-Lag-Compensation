@@ -88,11 +88,11 @@ namespace PG.LagCompensation.Parametric
 
         #region Raycasting
 
-        public override bool ColliderCastLive(Vector3 rayOrigin, Vector3 rayDirection, float range, out ColliderCastHit hit)
+        public override bool ColliderCastLive(Vector3 rayOrigin, Vector3 rayDirection, float range, out ColliderCastHit hit, bool includeInternal = false)
         {
             if (ParametricRaycastCylinder(GlobalPosition, GlobalQuaternion, _height, _radius, rayOrigin, rayDirection, out hit))
             {
-                return hit.entryDistance <= range && hit.entryDistance >= 0f;
+                return hit.entryDistance <= range && (hit.entryDistance >= 0f || includeInternal) && hit.exitDistance >= 0f;
             }
             else
             {
@@ -100,11 +100,11 @@ namespace PG.LagCompensation.Parametric
             }
         }
 
-        public override bool ColliderCastCached(Vector3 rayOrigin, Vector3 rayDirection, float range, out ColliderCastHit hit)
+        public override bool ColliderCastCached(Vector3 rayOrigin, Vector3 rayDirection, float range, out ColliderCastHit hit, bool includeInternal = false)
         {
             if (ParametricRaycastCylinder(_cachedPosRot.position, _cachedPosRot.rotation, _height, _radius, rayOrigin, rayDirection, out hit))
             {
-                return hit.entryDistance <= range && hit.entryDistance >= 0f;
+                return hit.entryDistance <= range && (hit.entryDistance >= 0f || includeInternal) && hit.exitDistance >= 0f;
             }
             else
             {
@@ -287,10 +287,7 @@ namespace PG.LagCompensation.Parametric
 
             float distanceSquared = intersectPoint.DistanceSquaredTo(circleCenter);
 
-            if (t < 0f)
-            {
-                GD.Print("t= " + t + " center " + circleCenter + " circleNormal " + circleNormal + " intersect " + intersectPoint);
-            }
+            //GD.Print("CircularPlaneIntersect t= " + t + " center " + circleCenter + " circleNormal " + circleNormal + " intersect " + intersectPoint);
 
             return (distanceSquared <= circleRadius * circleRadius);
         }

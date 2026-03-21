@@ -135,13 +135,13 @@ namespace PG.LagCompensation.Parametric
 
 
 
-        public override bool ColliderCastLive(Vector3 rayOrigin, Vector3 rayDirection, float range, out ColliderCastHit hit)
+        public override bool ColliderCastLive(Vector3 rayOrigin, Vector3 rayDirection, float range, out ColliderCastHit hit, bool includeInternal = false)
         {
             TryInitialize();
 
-            if (MeshTest(GlobalPosition, GlobalQuaternion, _vertices, rayOrigin, rayDirection, out hit))
+            if (MeshTest(GlobalPosition, GlobalQuaternion, _vertices, rayOrigin, rayDirection, out hit, includeInternal))
             {
-                return hit.entryDistance <= range && hit.entryDistance >= 0f;
+                return hit.entryDistance <= range && (hit.entryDistance >= 0f || includeInternal) && hit.exitDistance >= 0f;
             }
             else
             {
@@ -150,13 +150,13 @@ namespace PG.LagCompensation.Parametric
 
         }
 
-        public override bool ColliderCastCached(Vector3 rayOrigin, Vector3 rayDirection, float range, out ColliderCastHit hit)
+        public override bool ColliderCastCached(Vector3 rayOrigin, Vector3 rayDirection, float range, out ColliderCastHit hit, bool includeInternal = false)
         {
             TryInitialize();
 
-            if (MeshTest(_cachedPosRot.position, _cachedPosRot.rotation, _vertices, rayOrigin, rayDirection, out hit))
+            if (MeshTest(_cachedPosRot.position, _cachedPosRot.rotation, _vertices, rayOrigin, rayDirection, out hit, includeInternal))
             {
-                return hit.entryDistance <= range && hit.entryDistance >= 0f;
+                return hit.entryDistance <= range && (hit.entryDistance >= 0f || includeInternal) && hit.exitDistance >= 0f;
             }
             else
             {
@@ -172,7 +172,7 @@ namespace PG.LagCompensation.Parametric
         /// Parametric raycast at box given by transform, center and size
         /// </summary>
         /// <returns></returns>
-        private static bool MeshTest(Vector3 meshPosition, Quaternion meshRotation, Vector3[] meshVertices, Vector3 rayOrigin, Vector3 rayDirection, out ColliderCastHit hit)
+        private static bool MeshTest(Vector3 meshPosition, Quaternion meshRotation, Vector3[] meshVertices, Vector3 rayOrigin, Vector3 rayDirection, out ColliderCastHit hit, bool includeInternal = false)
         {
             Quaternion inverseRotation = meshRotation.Inverse();
 
@@ -182,19 +182,35 @@ namespace PG.LagCompensation.Parametric
 
             hit = ColliderCastHit.Zero; // intialize hit with infinite entry distances
 
-            bool hitAnything = false;
+            bool hitAnyFront = false;
+            bool hitAnyBack = false;
+
+            // store data for entry in front of rayOrigin (relevant when origin is not inside the mesh)
+            float closestEntryDistanceInfront = float.PositiveInfinity;
+            Vector3 closestEntryNormalInfornt = Vector3.Zero;
+
+            // store data for entry behind rayOrigin (relevant when origin is inside the mesh)
+            float closestEntryDistanceBehind = float.NegativeInfinity;
+            Vector3 closestEntryNormalBehind = Vector3.Zero;
+
+            // store data for closest exit in front of rayOrigin (relevant for both when origin is or isn't inside the mesh)
+            float closestExitDistance = float.PositiveInfinity;
+            Vector3 closestExitNormal = Vector3.Zero;
+
+            // store data for second-closest exit in front of rayOrigin (relevant when origin is inside the mesh but a hit ouside should be returned)
+            float secondClosestExitDistance = float.PositiveInfinity;
+            Vector3 secondClosestExitNormal = Vector3.Zero;
 
             for (int i = 0; i < meshVertices.Length; i += 3)
             {
                 bool localHit = TriangleIntersect(in rayOriginTransformed, in rayDirectionTransformed,
                 in meshVertices[i], in meshVertices[i + 1], in meshVertices[i + 2],
-                out float t, out float u, out float v, out Vector3 N
+                out float t, out float u, out float v, out Vector3 N, allowNegativeDistance: includeInternal
                 );
 
                 if (localHit)
                 {
-                    hitAnything = true;
-
+                    // note: this normal vector is not neccessarily normalized. Will be normalized later in this function.
                     N = -N; // flip the normal vector
 
                     // check using dot product if the face normal and the ray direction point in opposite directions.
@@ -204,34 +220,84 @@ namespace PG.LagCompensation.Parametric
 
                     if (hitFrontFace)
                     {
-                        if (t < hit.entryDistance)
+                        hitAnyFront = true;
+
+                        if (0 > t && t > closestEntryDistanceBehind)
                         {
-                            hit.entryDistance = t;
-                            hit.entryNormal = N; // TODO: check if this needs to be normalized
+                            closestEntryDistanceBehind = t;
+                            closestEntryNormalBehind = N;
+                        }
+
+                        if (0 <= t && t < closestEntryDistanceInfront)
+                        {
+                            closestEntryDistanceInfront = t;
+                            closestEntryNormalInfornt = N;
                         }
                     }
                     else // hit back face
                     {
-                        if (t < hit.exitDistance)
+                        if (t >= 0)
                         {
-                            hit.exitDistance = t;
-                            hit.exitNormal = N; // TODO: check if this needs to be normalized
+                            hitAnyBack = true;
+                        }
+
+                        if (0 <= t && t < closestExitDistance)
+                        {
+                            secondClosestExitDistance = closestExitDistance;
+                            secondClosestExitNormal = closestExitNormal;
+
+                            closestExitDistance = t;
+                            closestExitNormal = N;
                         }
                     }
                 }
             }
 
-            if (!hitAnything)
+            if (!hitAnyFront || !hitAnyBack)
             {
                 return false;
+            }
+
+            if (closestExitDistance < closestEntryDistanceInfront)
+            {
+                // closest exit is closer than closest entry --> the ray origin is inside the mesh
+                if (includeInternal)
+                {
+                    // use entry behind the ray origin
+                    hit.entryDistance = closestEntryDistanceBehind;
+                    hit.entryNormal = closestEntryNormalBehind;
+
+                    hit.exitDistance = closestExitDistance;
+                    hit.exitNormal = closestExitNormal;
+                }
+                else
+                {
+                    // use entry in front of the the ray origin
+                    hit.entryDistance = closestEntryDistanceInfront;
+                    hit.entryNormal = closestEntryNormalInfornt;
+
+                    hit.exitDistance = secondClosestExitDistance;
+                    hit.exitNormal = secondClosestExitNormal;
+                }
+            }
+            else
+            {
+                // closest entry is closer than closest exit --> the ray origin is outside the mesh
+
+                // use entry in front of the the ray origin
+                hit.entryDistance = closestEntryDistanceInfront;
+                hit.entryNormal = closestEntryNormalInfornt;
+
+                hit.exitDistance = closestExitDistance;
+                hit.exitNormal = closestExitNormal;
             }
 
             hit.entryPoint = rayOrigin + rayDirection * hit.entryDistance;
             hit.exitPoint = rayOrigin + rayDirection * hit.exitDistance;
 
-            // correct normal vector rotations
-            hit.entryNormal = meshRotation * hit.entryNormal;
-            hit.exitNormal = meshRotation * hit.exitNormal;
+            // correct normal vector rotations and normalize
+            hit.entryNormal = (meshRotation * hit.entryNormal).Normalized();
+            hit.exitNormal = (meshRotation * hit.exitNormal).Normalized();
 
             return true;
         }
@@ -282,8 +348,9 @@ namespace PG.LagCompensation.Parametric
         /// <param name="u">Value along first plane axis</param>
         /// <param name="v">Value along second plane axis</param>
         /// <param name="N">Normal vector of plane</param>
+        /// <param name="allowNegativeDistance">Should a t-value < 0 be allowed without turning the return value to false?</param>
         /// <returns>Does the given ray intersect the given triangle?</returns>
-        public static bool TriangleIntersect(in Vector3 origin, in Vector3 direction, in Vector3 A, in Vector3 B, in Vector3 C, out float t, out float u, out float v, out Vector3 N)
+        public static bool TriangleIntersect(in Vector3 origin, in Vector3 direction, in Vector3 A, in Vector3 B, in Vector3 C, out float t, out float u, out float v, out Vector3 N, bool allowNegativeDistance = false)
         {
             // solution 3) of the highest rated reply
             //https://stackoverflow.com/questions/42740765/intersection-between-line-and-triangle-in-3d
@@ -322,7 +389,7 @@ namespace PG.LagCompensation.Parametric
             u = E2.Dot(DAO) * invdet;
             v = -E1.Dot(DAO) * invdet;
             t = AO.Dot(N) * invdet;
-            return (Mathf.Abs(det) >= 1e-6 && t >= 0.0 && u >= 0.0 && v >= 0.0 && (u + v) <= 1.0);
+            return (Mathf.Abs(det) >= 1e-6 && (t >= 0.0 || allowNegativeDistance) && u >= 0.0 && v >= 0.0 && (u + v) <= 1.0);
         }
 
         #endregion

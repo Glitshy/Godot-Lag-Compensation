@@ -27,18 +27,20 @@ namespace PG.LagCompensation.Parametric
         /// <param name="rayDirection">Normalized ray direction.</param>
         /// <param name="range">Maximum range of ray.</param>
         /// <param name="hit">Resulting hit.</param>
+        /// <param name="includeInternal">Include hits where the origin is within the collider</param>
         /// <returns>Successfully hit collider?</returns>
-        public abstract bool ColliderCastLive(Vector3 rayOrigin, Vector3 rayDirection, float range, out ColliderCastHit hit);
+        public abstract bool ColliderCastLive(Vector3 rayOrigin, Vector3 rayDirection, float range, out ColliderCastHit hit, bool includeInternal = false);
 
-		/// <summary>
-		/// Cast at cached location/rotation. Return true if hit. Outpout hit entry and exit point, normal and distance.
-		/// </summary>
-		/// <param name="rayOrigin">Ray origin.</param>
-		/// <param name="rayDirection">Normalized ray direction.</param>
-		/// <param name="range">Maximum range of ray.</param>
-		/// <param name="hit">Resulting hit.</param>
-		/// <returns>Successfully hit collider?</returns>
-		public abstract bool ColliderCastCached(Vector3 rayOrigin, Vector3 rayDirection, float range, out ColliderCastHit hit);
+        /// <summary>
+        /// Cast at cached location/rotation. Return true if hit. Outpout hit entry and exit point, normal and distance.
+        /// </summary>
+        /// <param name="rayOrigin">Ray origin.</param>
+        /// <param name="rayDirection">Normalized ray direction.</param>
+        /// <param name="range">Maximum range of ray.</param>
+        /// <param name="hit">Resulting hit.</param>
+        /// <param name="includeInternal">Include hits where the origin is within the collider</param>
+        /// <returns>Successfully hit collider?</returns>
+        public abstract bool ColliderCastCached(Vector3 rayOrigin, Vector3 rayDirection, float range, out ColliderCastHit hit, bool includeInternal = false);
 
         /// <summary>
         /// Calculate exit positon and normal vector of intersection of ray with sphere.
@@ -65,6 +67,8 @@ namespace PG.LagCompensation.Parametric
             {
                 entryPoint = o + entryDistance * d;
                 entryNormal = (entryPoint - c).Normalized();
+
+                //GD.Print("ParametricRaycastSphereEntry entryDistance " + entryDistance);
 
                 return true;
             }
@@ -104,7 +108,7 @@ namespace PG.LagCompensation.Parametric
                 exitPoint = o + exitDistance * d;
                 exitNormal = (exitPoint - c).Normalized();
 
-                //Debug.Log("exitDistance " + exitDistance + " entryDistance " + entryDistance);
+                //GD.Print("ParametricRaycastSphereExit exitDistance " + exitDistance);
 
                 return true;
             }
@@ -158,8 +162,7 @@ namespace PG.LagCompensation.Parametric
                 exitPoint = o + exitDistance * d;
                 exitNormal = (exitPoint - c) / r;
 
-                //Debug.DrawLine(o, entryPoint, Color.green);
-                //Debug.Log("exitDistance " + exitDistance + " entryDistance " + entryDistance);
+                //GD.Print("ParametricRaycastSphereBothSided exitDistance " + exitDistance + " entryDistance " + entryDistance);
 
                 return true;
             }

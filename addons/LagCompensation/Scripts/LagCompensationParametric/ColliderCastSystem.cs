@@ -61,8 +61,9 @@ namespace PG.LagCompensation.Parametric
         /// <param name="collection">Collection which has been hit. <c>null</c> if nothing has been hit.</param>
         /// <param name="hitColliderIndex">Index of collider in collection. <c>-1</c> if nothing has been hit.</param>
         /// <param name="exclude">Exclude this collection from being checked.</param>
+        /// <param name="includeInternal">Include hits where the origin is within the collider</param>
         /// <returns>Has anything been hit?</returns>
-        public static bool ColliderCastLive(Vector3 origin, Vector3 direction, float range, out ColliderCastHit hit, out HitColliderCollection collection, out int hitColliderIndex, HitColliderCollection[] exclude = null)
+        public static bool ColliderCastLive(Vector3 origin, Vector3 direction, float range, out ColliderCastHit hit, out HitColliderCollection collection, out int hitColliderIndex, HitColliderCollection[] exclude = null, bool includeInternal = false)
         {
             hit = ColliderCastHit.Zero;
             ColliderCastHit newHit;
@@ -84,7 +85,7 @@ namespace PG.LagCompensation.Parametric
                 {
                     if (_simulationObjects[i].CheckBoundingSphereDistanceLive(origin, direction, range))
                     {
-                        if (_simulationObjects[i].ColliderCastLive(origin, direction, range, out newHit, out newHitColliderIndex))
+                        if (_simulationObjects[i].ColliderCastLive(origin, direction, range, out newHit, out newHitColliderIndex, includeInternal))
                         {
                             if (newHit.entryDistance < hit.entryDistance)
                             {
@@ -113,8 +114,9 @@ namespace PG.LagCompensation.Parametric
         /// <param name="collection">Collection which has been hit. <c>null</c> if nothing has been hit.</param>
         /// <param name="hitColliderIndex">Index of collider in collection. <c>-1</c> if nothing has been hit.</param>
         /// <param name="exclude">Exclude this collection from being checked.</param>
+        /// <param name="includeInternal">Include hits where the origin is within the collider</param>
         /// <returns>Has anything been hit?</returns>
-        public static bool ColliderCastCached(Vector3 origin, Vector3 direction, float range, out ColliderCastHit hit, out HitColliderCollection collection, out int hitColliderIndex, HitColliderCollection[] exclude = null)
+        public static bool ColliderCastCached(Vector3 origin, Vector3 direction, float range, out ColliderCastHit hit, out HitColliderCollection collection, out int hitColliderIndex, HitColliderCollection[] exclude = null, bool includeInternal = false)
         {
 
             hit = ColliderCastHit.Zero;
@@ -139,7 +141,7 @@ namespace PG.LagCompensation.Parametric
                     {
                         _simulationObjects[i].SimulateFully(); // cache the locations/rotations of all managed hitColliders (if it hasn't been done already)
 
-                        if (_simulationObjects[i].ColliderCastCached(origin, direction, range, out newHit, out newHitColliderIndex))
+                        if (_simulationObjects[i].ColliderCastCached(origin, direction, range, out newHit, out newHitColliderIndex, includeInternal))
                         {
                             if (newHit.entryDistance < hit.entryDistance)
                             {

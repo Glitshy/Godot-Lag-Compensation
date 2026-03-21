@@ -18,6 +18,8 @@ namespace PG.LagCompensation.Testing
         [Export]
         private float maxDistance = 10f;
         [Export]
+        private bool includeInternalHits = false;
+        [Export]
         private HitColliderCollection collection;
         [Export]
         private bool doPerformanceTest = false;
@@ -125,7 +127,7 @@ namespace PG.LagCompensation.Testing
 
                 for (int k = 0; k < loopCount; k++)
                 {
-                    hits[i] = col.ColliderCastLive(rayOrigin, rayDirection, maxDistance, out ColliderCastHit _hit);
+                    hits[i] = col.ColliderCastLive(rayOrigin, rayDirection, maxDistance, out ColliderCastHit _hit, includeInternalHits);
                 }
 
                 summedTime[i] = Time.GetTicksUsec() * 1e-6 - t;
@@ -164,10 +166,20 @@ namespace PG.LagCompensation.Testing
             Vector3 o = GlobalPosition;
             Vector3 d = GlobalBasis.Z;
 
-            if (ColliderCastSystem.ColliderCastLive(o, d, maxDistance, out _hit, out HitColliderCollection collection, out int hitColIndex))
+            if (ColliderCastSystem.ColliderCastLive(o, d, maxDistance, out _hit, out HitColliderCollection collection, out int hitColIndex, includeInternal: includeInternalHits))
             {
                 ColliderDrawing.DrawLine(_hit.entryPoint, _hit.entryPoint + _hit.entryNormal, Color.Color8(0, 127, 127));
-                ColliderDrawing.DrawLine(o, _hit.entryPoint, Color.Color8(0, 255, 0));
+                if (_hit.entryDistance >= 0)
+                {
+                    // entry point in front of the origin, i.e. regular hit --> green
+                    ColliderDrawing.DrawLine(o, _hit.entryPoint, Color.Color8(0, 255, 0));
+                }
+                else
+                {
+                    // entry point behind the origin, i.e. internal hit --> yellow
+                    // should only happen when includeInternalHits is true
+                    ColliderDrawing.DrawLine(o, _hit.entryPoint, Color.Color8(255, 255, 0));
+                }
 
                 ColliderDrawing.DrawLine(_hit.exitPoint, _hit.exitPoint + _hit.exitNormal, Color.Color8(255, 0, 127));
                 ColliderDrawing.DrawLine(_hit.entryPoint, _hit.exitPoint, Color.Color8(127, 127, 127));

@@ -47,11 +47,11 @@ namespace PG.LagCompensation.Parametric
 
         #region Raycasting
 
-        public override bool ColliderCastLive(Vector3 rayOrigin, Vector3 rayDirection, float range, out ColliderCastHit hit)
+        public override bool ColliderCastLive(Vector3 rayOrigin, Vector3 rayDirection, float range, out ColliderCastHit hit, bool includeInternal = false)
         {
             if (BoxTest(GlobalPosition, GlobalQuaternion, size, rayOrigin, rayDirection, out hit))
             {
-                return hit.entryDistance <= range && hit.entryDistance >= 0f;
+                return hit.entryDistance <= range && (hit.entryDistance >= 0f || includeInternal) && hit.exitDistance >= 0f;
             }
             else
             {
@@ -60,13 +60,13 @@ namespace PG.LagCompensation.Parametric
 
         }
 
-        public override bool ColliderCastCached(Vector3 rayOrigin, Vector3 rayDirection, float range, out ColliderCastHit hit)
+        public override bool ColliderCastCached(Vector3 rayOrigin, Vector3 rayDirection, float range, out ColliderCastHit hit, bool includeInternal = false)
         {
 
 
             if (BoxTest(_cachedPosRot.position, _cachedPosRot.rotation, size, rayOrigin, rayDirection, out hit))
             {
-                return hit.entryDistance <= range && hit.entryDistance >= 0f;
+                return hit.entryDistance <= range && (hit.entryDistance >= 0f || includeInternal) && hit.exitDistance >= 0f;
             }
             else
             {
@@ -84,25 +84,18 @@ namespace PG.LagCompensation.Parametric
         /// <returns></returns>
         private static bool BoxTest(Vector3 boxPosition, Quaternion boxRotation, Vector3 boxSize, Vector3 rayOrigin, Vector3 rayDirection, out ColliderCastHit _hit)
         {
-            Quaternion _inverseRotation = boxRotation.Inverse();
+            Quaternion inverseRotation = boxRotation.Inverse();
 
-            // forward ray
-            Vector3 rayOriginTransformed = _inverseRotation * (rayOrigin - boxPosition);
-            Vector3 rayDirectionTransformed = _inverseRotation * rayDirection;
-
-            // backward ray
-            Vector3 rayOriginOpposite = rayOriginTransformed + rayDirectionTransformed * 9999f;
-            Vector3 rayDirectionOpposite = -rayDirectionTransformed;
+            // ray in local coordinates of box
+            Vector3 rayOriginTransformed = inverseRotation * (rayOrigin - boxPosition);
+            Vector3 rayDirectionTransformed = inverseRotation * rayDirection;
 
             Aabb boundingBox = new Aabb(-0.5f * boxSize, 1f * boxSize);
 
-            bool _hitBoolean = CheckBoxIntersection(boundingBox, rayOriginTransformed, rayDirectionTransformed, out float entryDistance);
+            bool hitBoolean = CheckBoxIntersection(boundingBox, rayOriginTransformed, rayDirectionTransformed, out float entryDistance, out float exitDistance);
 
-            if (_hitBoolean) // --> figure out exit point and normals of entry and exit
+            if (hitBoolean) // --> figure out exit point and normals of entry and exit
             {
-                CheckBoxIntersection(boundingBox, rayOriginOpposite, rayDirectionOpposite, out float exitDistance);
-                exitDistance = 9999f - exitDistance;
-
                 _hit = new ColliderCastHit() { entryPoint = rayOrigin + rayDirection * entryDistance, entryDistance = entryDistance, exitPoint = rayOrigin + rayDirection * exitDistance, exitDistance = exitDistance };
 
                 // entry point normal calculation
@@ -149,7 +142,7 @@ namespace PG.LagCompensation.Parametric
             }
 
 
-            return _hitBoolean;
+            return hitBoolean;
         }
 
         /// <summary>
@@ -158,11 +151,11 @@ namespace PG.LagCompensation.Parametric
         /// <param name="boundingBox">Bounding box to check against.</param>
         /// <param name="origin">Ray origin.</param>
         /// <param name="direction">Normalized ray direction.</param>
-        /// <param name="distance">Intersection distance.</param>
-        /// <returns></returns>
-        public static bool CheckBoxIntersection(Aabb boundingBox, Vector3 origin, Vector3 direction, out float distance)
+        /// <param name="entryDistance">Intersection distance of entry point.</param>
+        /// <param name="exitDistance">Intersection distance of exit point.</param>
+        /// <returns>Does the ray intersect the box?</returns>
+        public static bool CheckBoxIntersection(Aabb boundingBox, Vector3 origin, Vector3 direction, out float entryDistance, out float exitDistance)
         {
-            distance = 0f;
             Vector3 invDir = new Vector3(1f / direction.X, 1f / direction.Y, 1f / direction.Z);
             Vector3 start = boundingBox.Position;
             Vector3 end = boundingBox.Position + boundingBox.Size;
@@ -174,14 +167,11 @@ namespace PG.LagCompensation.Parametric
             float t5 = (start.Z - origin.Z) * invDir.Z;
             float t6 = (end.Z - origin.Z) * invDir.Z;
 
-            float tMin = Mathf.Max(Mathf.Max(Mathf.Min(t1, t2), Mathf.Min(t3, t4)), Mathf.Min(t5, t6));
-            float tMax = Mathf.Min(Mathf.Min(Mathf.Max(t1, t2), Mathf.Max(t3, t4)), Mathf.Max(t5, t6));
+            entryDistance = Mathf.Max(Mathf.Max(Mathf.Min(t1, t2), Mathf.Min(t3, t4)), Mathf.Min(t5, t6));
+            exitDistance = Mathf.Min(Mathf.Min(Mathf.Max(t1, t2), Mathf.Max(t3, t4)), Mathf.Max(t5, t6));
 
-            if (tMax < 0 || tMin > tMax)
-                return false;
-
-            distance = (tMin < 0) ? tMax : tMin;
-            return true;
+            // the box is only actuall hit if this condition is fulfilled
+            return exitDistance > entryDistance;
         }
 
         #endregion

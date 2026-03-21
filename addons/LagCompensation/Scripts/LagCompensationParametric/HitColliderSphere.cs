@@ -60,11 +60,11 @@ namespace PG.LagCompensation.Parametric
 
         #region Raycasting
 
-        public override bool ColliderCastLive(Vector3 rayOrigin, Vector3 rayDirection, float range, out ColliderCastHit hit)
+        public override bool ColliderCastLive(Vector3 rayOrigin, Vector3 rayDirection, float range, out ColliderCastHit hit, bool includeInternal = false)
         {
             if (ParametricRaycastSphereBothSided(GlobalPosition, _radius, rayOrigin, rayDirection, out hit.entryPoint, out hit.entryNormal, out hit.entryDistance, out hit.exitPoint, out hit.exitNormal, out hit.exitDistance))
             {
-                return hit.entryDistance <= range && hit.entryDistance >= 0f;
+                return hit.entryDistance <= range && (hit.entryDistance >= 0f || includeInternal) && hit.exitDistance >= 0f;
             }
             else
             {
@@ -74,11 +74,11 @@ namespace PG.LagCompensation.Parametric
         }
 
 
-        public override bool ColliderCastCached(Vector3 rayOrigin, Vector3 rayDirection, float range, out ColliderCastHit hit)
+        public override bool ColliderCastCached(Vector3 rayOrigin, Vector3 rayDirection, float range, out ColliderCastHit hit, bool includeInternal = false)
         {
             if (ParametricRaycastSphereBothSided(_cachedPosRot.position, _radius, rayOrigin, rayDirection, out hit.entryPoint, out hit.entryNormal, out hit.entryDistance, out hit.exitPoint, out hit.exitNormal, out hit.exitDistance))
             {
-                return hit.entryDistance <= range && hit.entryDistance >= 0f;
+                return hit.entryDistance <= range && (hit.entryDistance >= 0f || includeInternal) && hit.exitDistance >= 0f;
             }
             else
             {

@@ -68,9 +68,9 @@ namespace PG.LagCompensation.Parametric
         public int GetHitColliderCount => hitColliders.Length;
 
         public HitColliderGeneric GetHitColliderAtIndex(int i)
-		{
+        {
             if (i >= hitColliders.Length || i < 0)
-			{
+            {
                 GD.PrintErr("Index " + i + " out of range for list with count " + hitColliders.Length + " (Node: " + this.Name + ")");
                 return null;
 
@@ -150,8 +150,9 @@ namespace PG.LagCompensation.Parametric
         /// <param name="range">Range of cast</param>
         /// <param name="hit">Exit/entry of hit</param>
         /// <param name="hitColliderIndex">Index of the hit collider in this collection which got hit</param>
+        /// <param name="includeInternal">Include hits where the origin is within the collider</param>
         /// <returns>Was a collider hit?</returns>
-        public bool ColliderCastLive(Vector3 origin, Vector3 direction, float range, out ColliderCastHit hit, out int hitColliderIndex)
+        public bool ColliderCastLive(Vector3 origin, Vector3 direction, float range, out ColliderCastHit hit, out int hitColliderIndex, bool includeInternal = false)
         {
             hit = ColliderCastHit.Zero;
             ColliderCastHit newHit;
@@ -164,10 +165,10 @@ namespace PG.LagCompensation.Parametric
                 {
                     if (hitColliders[i].CheckBoundingSphereDistanceLive(origin, direction, range))
                     {
-                        if (hitColliders[i].ColliderCastLive(origin, direction, range, out newHit))
+                        if (hitColliders[i].ColliderCastLive(origin, direction, range, out newHit, includeInternal))
                         {
                             if (newHit.entryDistance < hit.entryDistance)
-							{
+                            {
                                 hitColliderIndex = i;
                                 hit = newHit;
                             }
@@ -191,8 +192,9 @@ namespace PG.LagCompensation.Parametric
         /// <param name="range">Range of cast</param>
         /// <param name="hit">Exit/entry of hit</param>
         /// <param name="hitColliderIndex">Index of the hit collider in this collection which got hit</param>
+        /// <param name="includeInternal">Include hits where the origin is within the collider</param>
         /// <returns>Was a collider hit?</returns>
-        public bool ColliderCastCached(Vector3 origin, Vector3 direction, float range, out ColliderCastHit hit, out int hitColliderIndex)
+        public bool ColliderCastCached(Vector3 origin, Vector3 direction, float range, out ColliderCastHit hit, out int hitColliderIndex, bool includeInternal = false)
         {
 
             hit = ColliderCastHit.Zero;
@@ -206,7 +208,7 @@ namespace PG.LagCompensation.Parametric
                 {
                     if (hitColliders[i].CheckBoundingSphereDistanceCached(origin, direction, range))
                     {
-                        if (hitColliders[i].ColliderCastCached(origin, direction, range, out newHit))
+                        if (hitColliders[i].ColliderCastCached(origin, direction, range, out newHit, includeInternal))
                         {
                             if (newHit.entryDistance < hit.entryDistance)
                             {

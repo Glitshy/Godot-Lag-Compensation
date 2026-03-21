@@ -1,5 +1,5 @@
 # Raycast Lag Compensation
-![Version](https://img.shields.io/badge/version-1.2-blue.svg)
+![Version](https://img.shields.io/badge/version-1.3-blue.svg)
 $~~~~~$
 ![Engine](https://img.shields.io/badge/Godot-%23FFFFFF.svg?logo=godot-engine)
 ![Engine_Version](https://img.shields.io/badge/4.4-white.svg)
@@ -29,8 +29,18 @@ This project contains two systems:
 - My third approach which uses physical collision shapes (like the first approach) but bundles them in collections (like the second approach) and first checks the bounding sphere of the collection before updating the transforms
 
 Two example scenes:
-- One for testing the custom hit detection / raycasting maths for all the available shapes, as well as a "collider cast" performance test of the different shapes (spheres perform the best, custom meshes with many trinagles the worst)
-- One for comparing the two systems for the purpose of lag compensation and performance.
+
+**"HitColliderTest"** for testing the custom hit detection / raycasting maths for all the available shapes, as well as a "collider cast" performance test of the different shapes (spheres perform the best, custom meshes with many trinagles the worst). Manioulating the ray origin and HitCollider transforms via Godot Editor's Remote controls allows testing the behaviour and robustness of the custom raycasting logic.
+
+<div align="center">
+  <img src="addons/LagCompensation/HitColliderTest.gif">
+</div>
+
+**"LagCompensationTest"** for comparing the different systems for the purpose of lag compensation and performance. Here, a ray is "shot" at a humanoid character with a simulated delay.
+
+<div align="center">
+  <img src="addons/LagCompensation/LagCompensationTest.gif">
+</div>
 
 Code is (somewhat) documented and there is some explanation text in the lag compensation scene.
 
@@ -54,6 +64,8 @@ As the system is designed with non-hitscan projectiles in mind, which travel a c
 With a lag delay of ~300 ms (extreme example) and a fixed update rate of 50/s, this results in 16 or 17 iterations.
 
 # How "HitCollider" and the "ColliderCastSystem" works (custom colliders)
+
+Note: By default, if a ray originates from inside a HitCollider shape/mesh, there won't be a hit registered (as the distance to the entry point would be negative). This behaviour can be modified with an optional boolean parameter.
 
 ## "TrackerBase"
 Parent class of all HitColliders. Implements timestamps and some shared functions.
