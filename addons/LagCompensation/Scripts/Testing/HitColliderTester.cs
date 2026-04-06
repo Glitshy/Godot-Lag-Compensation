@@ -113,13 +113,14 @@ namespace PG.LagCompensation.Testing
             double[] summedTime = new double[count];
             bool[] hits = new bool[count];
 
-            GD.Print("Testing performance with " + loopCount + " raycast iterations per collider");
+            GD.Print("Testing ColliderCast (excluding bounding sphere check) performance with " + loopCount + " raycast iterations per collider");
 
             for (int i = 0; i < count; i++)
             {
                 HitColliderGeneric col = collection.GetHitColliderAtIndex(i);
 
                 // cast rays vertically down onto the colliders
+                // TODO: Test with a mixture of hits and near-misses from a prepared array of random angles
                 Vector3 rayOrigin = col.GlobalPosition + Vector3.Up * maxDistance * 0.5f;
                 Vector3 rayDirection = -Vector3.Up;
 
@@ -141,6 +142,35 @@ namespace PG.LagCompensation.Testing
                 GD.Print("Collider " + col.Name + " time " + summedTime[i].ToString("F6") + " seconds" + " | " + " hit=" + hits[i].ToString());
             }
 
+
+            GD.Print("Testing bounding sphere check performance with " + loopCount + " raycast iterations per collider");
+
+            for (int i = 0; i < count; i++)
+            {
+                HitColliderGeneric col = collection.GetHitColliderAtIndex(i);
+
+                // cast rays vertically down onto the colliders
+                // TODO: Test with a mixture of hits and near-misses from a prepared array of random angles
+                Vector3 rayOrigin = col.GlobalPosition + Vector3.Up * maxDistance * 0.5f;
+                Vector3 rayDirection = -Vector3.Up;
+
+                double t = Time.GetTicksUsec() * 1e-6;
+
+                for (int k = 0; k < loopCount; k++)
+                {
+                    hits[i] = col.CheckBoundingSphereDistanceLive(rayOrigin, rayDirection, maxDistance);
+                }
+
+                summedTime[i] = Time.GetTicksUsec() * 1e-6 - t;
+            }
+
+            for (int i = 0; i < count; i++)
+            {
+                HitColliderGeneric col = collection.GetHitColliderAtIndex(i);
+
+                // also print if the raycasts hit. Should always be true because we cast straigt down onto the collider center location. Only might be false if a mesh collider with a hole was used.
+                GD.Print("Collider " + col.Name + " time " + summedTime[i].ToString("F6") + " seconds" + " | " + " hit=" + hits[i].ToString());
+            }
 
             doPerformanceTest = false; // allow process again after the test is done
         }
