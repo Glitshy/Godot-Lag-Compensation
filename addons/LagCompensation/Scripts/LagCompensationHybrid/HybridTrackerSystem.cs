@@ -46,6 +46,12 @@ namespace PG.LagCompensation.Hybrid
         public static float GetStoreInterval => _storeInterval;
         public static float SetStoreInterval { set => _storeInterval = value; }
 
+        /// <summary>
+        /// This is called by <see cref="HybridTracker.GetCurrentTime"/> and <see cref="HybridTrackerCollection.GetCurrentTime"/>. By default simply calculates <c>Time.GetTicksUsec() * 1e-6</c>.
+        /// <br></br>
+        /// Overriding this allows changing the current-time logic. Useful when e.g. using a tick system independent of time since statup.
+        /// </summary>
+        public static Func<double> GetCurrentTime = () => { return Time.GetTicksUsec() * 1e-6; };
 
         /// <summary>
         /// List of all trackers in scene

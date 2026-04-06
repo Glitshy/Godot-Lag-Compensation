@@ -29,6 +29,10 @@ namespace PG.LagCompensation.Hybrid
 
         public override int GetHistoryLength => HybridTrackerSystem.GetFrameHistoryLength;
 
+        // override it here so the method in 'HybridTrackerSystem' can then be overridden again
+        // this only neccessitates overriding the logic only once in one place for all 'HybridTracker' / 'HybridTrackerCollection'
+        protected override double GetCurrentTime => HybridTrackerSystem.GetCurrentTime();
+
         /// <summary>
         /// Last position and rotation before rewinding
         /// </summary>

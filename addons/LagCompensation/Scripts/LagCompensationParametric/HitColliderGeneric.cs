@@ -17,6 +17,9 @@ namespace PG.LagCompensation.Parametric
         public override Node3D GetTargetNode => this;
         public override int GetHistoryLength => ColliderCastSystem.GetFrameHistoryLength;
 
+        // override it here so the method in 'ColliderCastSystem' can then be overridden again
+        // this only neccessitates overriding the logic only once in one place for all 'HitColliderGeneric'
+        protected override double GetCurrentTime => ColliderCastSystem.GetCurrentTime();
 
         #region Raycasting
 

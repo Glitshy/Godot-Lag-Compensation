@@ -47,8 +47,10 @@ namespace PG.LagCompensation.Base
         /// <summary>
         /// When interpolating to a target time where there is a older frame but no newer frame --> interpolate between this 'newest older' frame and the current position/rotation. 
         /// For that interolation, this time will be used.
+        /// By default, this uses <c>Time.GetTicksUsec() * 1e-6</c>.
+        /// Depending on the specific implementation, overring this might be neccessary (e.g. when using a tick system independent of time since statup).
         /// </summary>
-        protected double GetCurrentTime => Time.GetTicksUsec() * 1e-6;
+        protected virtual double GetCurrentTime => Time.GetTicksUsec() * 1e-6;
 
         /// <summary>
         /// Get Radius of bounding sphere
