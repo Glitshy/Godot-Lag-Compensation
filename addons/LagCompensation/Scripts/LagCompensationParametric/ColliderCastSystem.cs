@@ -1,7 +1,8 @@
+using Godot;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Godot;
 
 
 namespace PG.LagCompensation.Parametric
@@ -52,6 +53,66 @@ namespace PG.LagCompensation.Parametric
         #region Raycasting
 
         /// <summary>
+        /// Check live/cached postion/rotation. Call <c>Simulate()</c> first. Cast against all HitColliders in the scene, except excluded one (if given).
+        /// </summary>
+        /// <param name="useCached">false = use live transform / true = use cached transform</param>
+        /// <param name="origin">Origin of raycast.</param>
+        /// <param name="direction">Direction of raycast.</param>
+        /// <param name="range">Range of raycast.</param>
+        /// <param name="hit">Hit entry and exit.</param>
+        /// <param name="collection">Collection which has been hit. <c>null</c> if nothing has been hit.</param>
+        /// <param name="hitColliderIndex">Index of collider in collection. <c>-1</c> if nothing has been hit.</param>
+        /// <param name="exclude">Exclude this collection from being checked.</param>
+        /// <param name="includeInternal">Include hits where the origin is within the collider</param>
+        /// <returns>Has anything been hit?</returns>
+        public static bool ColliderCast(bool useCached, Vector3 origin, Vector3 direction, float range, out ColliderCastHit hit, out HitColliderCollection collection, out int hitColliderIndex, HitColliderCollection[] exclude = null, bool includeInternal = false)
+        {
+            hit = ColliderCastHit.Zero;
+            ColliderCastHit newHit;
+            collection = null;
+            hitColliderIndex = -1;
+            int newHitColliderIndex;
+
+            for (int i = 0; i < _simulationObjects.Count; i++)
+            {
+                var simulationObject = _simulationObjects[i];
+
+                if (exclude != null)
+                {
+                    if (exclude.Contains(simulationObject))
+                    {
+                        continue; // skip this one
+                    }
+                }
+
+                if (simulationObject.CheckBoundingSphere(useCached, origin, direction))
+                {
+                    if (simulationObject.CheckBoundingSphereDistance(useCached, origin, direction, range))
+                    {
+                        if (useCached)
+                        {
+                            simulationObject.SimulateFully(); // cache the locations/rotations of all managed hitColliders (if it hasn't been done already)
+                        }
+
+                        if (simulationObject.ColliderCast(useCached, origin, direction, range, out newHit, out newHitColliderIndex, includeInternal))
+                        {
+                            if (newHit.entryDistance < hit.entryDistance)
+                            {
+                                collection = simulationObject;
+                                hit = newHit;
+                                hitColliderIndex = newHitColliderIndex;
+                            }
+                        }
+                    }
+                }
+
+            }
+
+
+            return hit.entryDistance != Mathf.Inf;
+        }
+
+        /// <summary>
         /// Check current transform. Cast against all HitColliders in the scene, except excluded one (if given).
         /// </summary>
         /// <param name="origin">Origin of raycast.</param>
@@ -63,45 +124,10 @@ namespace PG.LagCompensation.Parametric
         /// <param name="exclude">Exclude this collection from being checked.</param>
         /// <param name="includeInternal">Include hits where the origin is within the collider</param>
         /// <returns>Has anything been hit?</returns>
+        [ObsoleteAttribute("Use 'ColliderCast' instead.", false)]
         public static bool ColliderCastLive(Vector3 origin, Vector3 direction, float range, out ColliderCastHit hit, out HitColliderCollection collection, out int hitColliderIndex, HitColliderCollection[] exclude = null, bool includeInternal = false)
         {
-            hit = ColliderCastHit.Zero;
-            ColliderCastHit newHit;
-            collection = null;
-            hitColliderIndex = -1;
-            int newHitColliderIndex;
-
-            for (int i = 0; i < _simulationObjects.Count; i++)
-            {
-                if (exclude != null)
-                {
-                    if (exclude.Contains(_simulationObjects[i]))
-                    {
-                        continue; // skip this one
-                    }
-                }
-
-                if (_simulationObjects[i].CheckBoundingSphereLive(origin, direction))
-                {
-                    if (_simulationObjects[i].CheckBoundingSphereDistanceLive(origin, direction, range))
-                    {
-                        if (_simulationObjects[i].ColliderCastLive(origin, direction, range, out newHit, out newHitColliderIndex, includeInternal))
-                        {
-                            if (newHit.entryDistance < hit.entryDistance)
-                            {
-                                collection = _simulationObjects[i];
-                                hit = newHit;
-                                hitColliderIndex = newHitColliderIndex;
-                            }
-                                
-                        }
-                    }
-                }
-
-            }
-
-
-            return hit.entryDistance != Mathf.Inf;
+            return ColliderCast(false, origin, direction, range, out hit, out collection, out hitColliderIndex, exclude, includeInternal);
         }
 
         /// <summary>
@@ -116,47 +142,10 @@ namespace PG.LagCompensation.Parametric
         /// <param name="exclude">Exclude this collection from being checked.</param>
         /// <param name="includeInternal">Include hits where the origin is within the collider</param>
         /// <returns>Has anything been hit?</returns>
+        [ObsoleteAttribute("Use 'ColliderCast' instead.", false)]
         public static bool ColliderCastCached(Vector3 origin, Vector3 direction, float range, out ColliderCastHit hit, out HitColliderCollection collection, out int hitColliderIndex, HitColliderCollection[] exclude = null, bool includeInternal = false)
         {
-
-            hit = ColliderCastHit.Zero;
-            ColliderCastHit newHit;
-            collection = null;
-            hitColliderIndex = -1;
-            int newHitColliderIndex;
-
-            for (int i = 0; i < _simulationObjects.Count; i++)
-            {
-                if (exclude != null)
-                {
-                    if (exclude.Contains(_simulationObjects[i]))
-                    {
-                        continue; // skip this one
-                    }
-                }
-
-                if (_simulationObjects[i].CheckBoundingSphereCached(origin, direction))
-                {
-                    if (_simulationObjects[i].CheckBoundingSphereDistanceCached(origin, direction, range))
-                    {
-                        _simulationObjects[i].SimulateFully(); // cache the locations/rotations of all managed hitColliders (if it hasn't been done already)
-
-                        if (_simulationObjects[i].ColliderCastCached(origin, direction, range, out newHit, out newHitColliderIndex, includeInternal))
-                        {
-                            if (newHit.entryDistance < hit.entryDistance)
-                            {
-                                collection = _simulationObjects[i];
-                                hit = newHit;
-                                hitColliderIndex = newHitColliderIndex;
-                            }
-                        }
-                    }
-                }
-
-            }
-
-
-            return hit.entryDistance != Mathf.Inf;
+            return ColliderCast(true, origin, direction, range, out hit, out collection, out hitColliderIndex, exclude, includeInternal);
         }
 
         #endregion

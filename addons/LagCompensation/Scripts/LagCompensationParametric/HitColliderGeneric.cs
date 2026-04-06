@@ -21,6 +21,18 @@ namespace PG.LagCompensation.Parametric
         #region Raycasting
 
         /// <summary>
+        /// Cast at current/cached transform. Return true if hit. Outpout hit entry and exit point, normal and distance.
+        /// </summary>
+        /// <param name="useCached">false = use live transform / true = use cached transform</param>
+        /// <param name="rayOrigin">Ray origin.</param>
+        /// <param name="rayDirection">Normalized ray direction.</param>
+        /// <param name="range">Maximum range of ray.</param>
+        /// <param name="hit">Resulting hit.</param>
+        /// <param name="includeInternal">Include hits where the origin is within the collider</param>
+        /// <returns>Successfully hit collider?</returns>
+        public abstract bool ColliderCast(bool useCached, Vector3 rayOrigin, Vector3 rayDirection, float range, out ColliderCastHit hit, bool includeInternal = false);
+
+        /// <summary>
         /// Cast at current transform. Return true if hit. Outpout hit entry and exit point, normal and distance.
         /// </summary>
         /// <param name="rayOrigin">Ray origin.</param>
@@ -29,7 +41,11 @@ namespace PG.LagCompensation.Parametric
         /// <param name="hit">Resulting hit.</param>
         /// <param name="includeInternal">Include hits where the origin is within the collider</param>
         /// <returns>Successfully hit collider?</returns>
-        public abstract bool ColliderCastLive(Vector3 rayOrigin, Vector3 rayDirection, float range, out ColliderCastHit hit, bool includeInternal = false);
+        [ObsoleteAttribute("Use 'ColliderCast' instead.", false)]
+        public virtual bool ColliderCastLive(Vector3 rayOrigin, Vector3 rayDirection, float range, out ColliderCastHit hit, bool includeInternal = false)
+        {
+            return ColliderCast(false, rayOrigin, rayDirection, range, out hit, includeInternal);
+        }
 
         /// <summary>
         /// Cast at cached location/rotation. Return true if hit. Outpout hit entry and exit point, normal and distance.
@@ -40,7 +56,11 @@ namespace PG.LagCompensation.Parametric
         /// <param name="hit">Resulting hit.</param>
         /// <param name="includeInternal">Include hits where the origin is within the collider</param>
         /// <returns>Successfully hit collider?</returns>
-        public abstract bool ColliderCastCached(Vector3 rayOrigin, Vector3 rayDirection, float range, out ColliderCastHit hit, bool includeInternal = false);
+        [ObsoleteAttribute("Use 'ColliderCast' instead.", false)]
+        public virtual bool ColliderCastCached(Vector3 rayOrigin, Vector3 rayDirection, float range, out ColliderCastHit hit, bool includeInternal = false)
+        {
+            return ColliderCast(true, rayOrigin, rayDirection, range, out hit, includeInternal);
+        }
 
         /// <summary>
         /// Calculate exit positon and normal vector of intersection of ray with sphere.

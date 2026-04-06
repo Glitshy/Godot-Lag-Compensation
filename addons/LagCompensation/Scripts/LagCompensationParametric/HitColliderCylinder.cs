@@ -9,7 +9,7 @@ namespace PG.LagCompensation.Parametric
     [Tool]
     public partial class HitColliderCylinder : HitColliderGeneric
     {
-        
+
         private float _height = 2f;
 
         private float _radius = 0.5f;
@@ -41,7 +41,7 @@ namespace PG.LagCompensation.Parametric
                 }
             }
         }
-        
+
 
         /// <summary>
         /// Get height of capsule, e.g. for gizmo
@@ -88,21 +88,9 @@ namespace PG.LagCompensation.Parametric
 
         #region Raycasting
 
-        public override bool ColliderCastLive(Vector3 rayOrigin, Vector3 rayDirection, float range, out ColliderCastHit hit, bool includeInternal = false)
+        public override bool ColliderCast(bool useCached, Vector3 rayOrigin, Vector3 rayDirection, float range, out ColliderCastHit hit, bool includeInternal = false)
         {
-            if (ParametricRaycastCylinder(GlobalPosition, GlobalQuaternion, _height, _radius, rayOrigin, rayDirection, out hit))
-            {
-                return hit.entryDistance <= range && (hit.entryDistance >= 0f || includeInternal) && hit.exitDistance >= 0f;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        public override bool ColliderCastCached(Vector3 rayOrigin, Vector3 rayDirection, float range, out ColliderCastHit hit, bool includeInternal = false)
-        {
-            if (ParametricRaycastCylinder(_cachedPosRot.position, _cachedPosRot.rotation, _height, _radius, rayOrigin, rayDirection, out hit))
+            if (ParametricRaycastCylinder(useCached ? _cachedPosRot.position : GlobalPosition, useCached ? _cachedPosRot.rotation : GlobalQuaternion, _height, _radius, rayOrigin, rayDirection, out hit))
             {
                 return hit.entryDistance <= range && (hit.entryDistance >= 0f || includeInternal) && hit.exitDistance >= 0f;
             }
@@ -211,7 +199,7 @@ namespace PG.LagCompensation.Parametric
                     {
                         hit.entryNormal = -cylinderDirection;
                         CircularPlaneIntersect(o, d, a, -cylinderDirection, radius, out hit.entryDistance, out hit.entryPoint);
-                        
+
                         if (t_exit < 1f) // we are in the cylinder range of the cylinder
                         {
                             Vector3 _closestPoint = a + t_exit * (b - a);

@@ -58,78 +58,80 @@ namespace PG.LagCompensation.Base
 
         #region Raycasting
 
-
+        /// <summary>
+        /// Check if a line defined by origin and direction intersects with the bounding sphere of this collider. Uses live/cached transform (for cached, this is more performant than overriding transforms).
+        /// </summary>
+        /// <returns>True --> intersects, False --> No intersection</returns>
+        public bool CheckBoundingSphere(bool useCached, Vector3 origin, Vector3 direction)
+        {
+            return GetBoundingSphereRadiusSquared >= ColliderMath.GetSquaredMinimumDistanceBetwenPointAndLine(useCached ? GetCachedPosRot.position : GetTargetNode.GlobalPosition, origin, direction);
+        }
 
         /// <summary>
         /// Check if a line defined by origin and direction intersects with the bounding sphere of this collider.
         /// </summary>
         /// <returns>True --> intersects, False --> No intersection</returns>
+        [ObsoleteAttribute("Use 'CheckBoundingSphere' instead.", false)]
         public bool CheckBoundingSphereLive(Vector3 origin, Vector3 direction)
         {
-            return GetBoundingSphereRadiusSquared >= ColliderMath.GetSquaredMinimumDistanceBetwenPointAndLine(GetTargetNode.GlobalPosition, origin, direction);
+            return CheckBoundingSphere(false, origin, direction);
         }
 
         /// <summary>
         /// Check if a line defined by origin and direction intersects with the bounding sphere of this collider. Uses cached transform, more performant than overriding transforms.
         /// </summary>
         /// <returns>True --> intersects, False --> No intersection</returns>
+        [ObsoleteAttribute("Use 'CheckBoundingSphere' instead.", false)]
         public bool CheckBoundingSphereCached(Vector3 origin, Vector3 direction)
         {
-            return GetBoundingSphereRadiusSquared >= ColliderMath.GetSquaredMinimumDistanceBetwenPointAndLine(GetCachedPosRot.position, origin, direction);
+            return CheckBoundingSphere(true, origin, direction);
+        }
+
+        /// <summary>
+        /// Check if bounding sphere at current/cached transform is within range
+        /// </summary>
+        /// <param name="enlargeRadius">Add this value to the bounding sphere radius. Useful for doing capsule-sphere-overlap checks.</param>
+        /// <returns></returns>
+        public bool CheckBoundingSphereDistance(bool useCached, Vector3 origin, Vector3 direction, float range, float enlargeRadius = 0)
+        {
+            /*
+            // old system, which incorrectly warped the bounding sphere into a kind of bounding 'cylinder'
+            // while this behaves identically when the sphere center lies exactly on the ray line or the range was much greater than the distance, 
+            // but it was giving false positives when the range was approximately the distance to the sphere surface, especially when the ray was approxximately tangential
+
+            float closestDistance = ColliderMath.GetTValueAlongLine(origin, origin + direction, useCached ? GetCachedPosRot.position : GetTargetNode.GlobalPosition);
+
+            return closestDistance >= -GetBoundingSphereRadius && closestDistance <= range + GetBoundingSphereRadius; // minimum distance larger than negative radius! This allows casts which start within the bounding sphere
+            */
+
+
+            Vector3 center = useCached ? GetCachedPosRot.position : GetTargetNode.GlobalPosition;
+
+            float closestDistance = ColliderMath.GetTValueAlongLine(origin, origin + direction, center);
+
+            // calculate the closest point to the sphere along the 'direction' vector, but clamped to the maximum range
+            Vector3 closestPoint = origin + direction * Mathf.Clamp(closestDistance, 0f, range);
+
+            // check if the closest point is inside the sphere radius. This allows casts which start within the bounding sphere.
+            return (closestPoint - center).LengthSquared() <= (GetBoundingSphereRadius + enlargeRadius) * (GetBoundingSphereRadius + enlargeRadius);
         }
 
         /// <summary>
         /// Check if bounding sphere at current transform is within range
         /// </summary>
+        [ObsoleteAttribute("Use 'CheckBoundingSphereDistance' instead.", false)]
         public bool CheckBoundingSphereDistanceLive(Vector3 origin, Vector3 direction, float range)
         {
-            /*
-            // old system, which incorrectly warped the bounding sphere into a kind of bounding 'cylinder'
-            // while this behaves identically when the sphere center lies exactly on the ray line or the range was much greater than the distance, 
-            // but it was giving false positives when the range was approximately the distance to the sphere surface, especially when the ray was approxximately tangential
-
-            float closestDistance = ColliderMath.GetTValueAlongLine(origin, origin + direction, useCached ? GetCachedPosRot.position : GetTargetNode.GlobalPosition);
-
-            return closestDistance >= -GetBoundingSphereRadius && closestDistance <= range + GetBoundingSphereRadius; // minimum distance larger than negative radius! This allows casts which start within the bounding sphere
-            */
-
-
-            Vector3 center = GetTargetNode.GlobalPosition;
-
-            float closestDistance = ColliderMath.GetTValueAlongLine(origin, origin + direction, center);
-
-            // calculate the closest point to the sphere along the 'direction' vector, but clamped to the maximum range
-            Vector3 closestPoint = origin + direction * Mathf.Clamp(closestDistance, 0f, range);
-
-            // check if the closest point is inside the sphere radius. This allows casts which start within the bounding sphere.
-            return (closestPoint - center).LengthSquared() <= GetBoundingSphereRadiusSquared;
+            return CheckBoundingSphereDistance(false, origin, direction, range);
         }
 
         /// <summary>
         /// Check if bounding sphere at cached transform is within range
         /// </summary>
+        [ObsoleteAttribute("Use 'CheckBoundingSphereDistance' instead.", false)]
         public bool CheckBoundingSphereDistanceCached(Vector3 origin, Vector3 direction, float range)
         {
-            /*
-            // old system, which incorrectly warped the bounding sphere into a kind of bounding 'cylinder'
-            // while this behaves identically when the sphere center lies exactly on the ray line or the range was much greater than the distance, 
-            // but it was giving false positives when the range was approximately the distance to the sphere surface, especially when the ray was approxximately tangential
-
-            float closestDistance = ColliderMath.GetTValueAlongLine(origin, origin + direction, useCached ? GetCachedPosRot.position : GetTargetNode.GlobalPosition);
-
-            return closestDistance >= -GetBoundingSphereRadius && closestDistance <= range + GetBoundingSphereRadius; // minimum distance larger than negative radius! This allows casts which start within the bounding sphere
-            */
-
-
-            Vector3 center = GetCachedPosRot.position;
-
-            float closestDistance = ColliderMath.GetTValueAlongLine(origin, origin + direction, center);
-
-            // calculate the closest point to the sphere along the 'direction' vector, but clamped to the maximum range
-            Vector3 closestPoint = origin + direction * Mathf.Clamp(closestDistance, 0f, range);
-
-            // check if the closest point is inside the sphere radius. This allows casts which start within the bounding sphere.
-            return (closestPoint - center).LengthSquared() <= GetBoundingSphereRadiusSquared;
+            return CheckBoundingSphereDistance(true, origin, direction, range);
         }
 
         #endregion
