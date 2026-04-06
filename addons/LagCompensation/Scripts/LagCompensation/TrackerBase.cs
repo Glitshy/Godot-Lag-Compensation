@@ -27,8 +27,9 @@ namespace PG.LagCompensation.Base
         public abstract int GetHistoryLength { get; }
 
         /// <summary>
-        /// Assigned by <see cref="CalculateAndCacheInterpolatedPositionRotation"/>.
-        /// Use this position/rotation when doing the bounding sphere check and collider cast check. This means we don't need to override the transform position/rotation for lag compensation.
+        /// Assigned by <see cref="InterpolateAndCacheAtIndex"/>.
+        /// Use this position/rotation when doing the bounding sphere check and collider cast check.
+        /// This means we don't need to override the transform position/rotation for lag compensation.
         /// </summary>
         protected TransformFrameData _cachedPosRot;
 
@@ -199,14 +200,13 @@ namespace PG.LagCompensation.Base
                     if (i < _bufferTime.Count - 1) // there is a newer frame --> interpolate between these two
                     {
                         fraction = Math.Clamp((simulationTime - _bufferTime[i]) / (_bufferTime[i + 1] - _bufferTime[i]), 0d, 1d);
-                        _cachedPosRot = TransformFrameData.Interpolate(_bufferTransform[i], _bufferTransform[i + 1], fraction);
                     }
                     else // there is no newer frame --> interpolate between this 'newest' frame and the current time
                     {
-                        // Note: getting current transform and rotation is more performance intensive than cached frame data
                         fraction = Math.Clamp((simulationTime - _bufferTime[i]) / (GetCurrentTime - _bufferTime[i]), 0d, 1d);
-                        _cachedPosRot = TransformFrameData.Interpolate(_bufferTransform[i], new TransformFrameData(GetTargetNode), fraction);
                     }
+
+                    InterpolateAndCacheAtIndex(i, fraction);
 
                     _cachedTime = simulationTime;
                     _cachedIsUpToDate = false;
@@ -218,10 +218,27 @@ namespace PG.LagCompensation.Base
         }
 
         /// <summary>
+        /// Caches interpolated position and transform between the given index and index+1. Will use live transform if index+1 would exceed length of list. 
+        /// Can be overridden to interpolate additional parameters, e.g. layers or scale
+        /// </summary>
+        protected virtual void InterpolateAndCacheAtIndex(int olderIndex, double t)
+        {
+            if (olderIndex < _bufferTransform.Count - 1) // if there is a newer frame
+            {
+                _cachedPosRot = TransformFrameData.Interpolate(_bufferTransform[olderIndex], _bufferTransform[olderIndex + 1], t);
+            }
+            else // there is no newer frame --> interpolate between this 'newest' frame and the current position!
+            {
+                // Note: getting current transform and rotation is more performance intensive than cached frame data
+                _cachedPosRot = TransformFrameData.Interpolate(_bufferTransform[olderIndex], new TransformFrameData(GetTargetNode), t);
+            }
+        }
+
+        /// <summary>
         /// (Re)Initialize ring buffers, neccessary after e.g. changing the <see cref="GetHistoryLength"/> value.
         /// Note: This will also clear all values.
         /// </summary>
-        public void InitializeBuffers()
+        public virtual void InitializeBuffers()
         {
             _bufferTime = new RingBuffer<double>(GetHistoryLength);
             _bufferTransform = new RingBuffer<TransformFrameData>(GetHistoryLength);
