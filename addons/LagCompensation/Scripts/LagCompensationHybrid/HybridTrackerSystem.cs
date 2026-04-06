@@ -83,7 +83,7 @@ namespace PG.LagCompensation.Hybrid
         {
             for (int i = 0; i < _simulationObjects.Count; i++)
             {
-                _simulationObjects[i].AddFrameAll(time);
+                _simulationObjects[i].AddFrame(time);
             }
         }
 

@@ -153,7 +153,7 @@ namespace PG.LagCompensation.Base
         /// <summary>
         /// Add postion/rotation with timestamp to list. Call this after doing movement updates!
         /// </summary>
-        public void AddFrame(double time)
+        public virtual void AddFrame(double time)
         {
             // initialize buffers if it hasn't happened yet
             if (_bufferTime == null)

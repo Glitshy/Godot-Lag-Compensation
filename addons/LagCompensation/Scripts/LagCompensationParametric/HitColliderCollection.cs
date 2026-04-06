@@ -110,9 +110,23 @@ namespace PG.LagCompensation.Parametric
         /// <summary>
         /// Add postion/rotation with timestamp to list of this collection node as well as all nodes managed by this. Call this after doing movement updates.
         /// </summary>
+        public override void AddFrame(double time)
+        {
+            base.AddFrame(time);
+
+            for (int i = 0; i < hitColliders.Length; i++)
+            {
+                hitColliders[i].AddFrame(time);
+            }
+        }
+
+        /// <summary>
+        /// Add postion/rotation with timestamp to list of this collection node as well as all nodes managed by this. Call this after doing movement updates.
+        /// </summary>
+        [ObsoleteAttribute("Use 'AddFrame' instead, which will also call AddFrame on all children.", false)]
         public void AddFrameAll(double time)
         {
-            AddFrame(time);
+            base.AddFrame(time);
 
             for (int i = 0; i < hitColliders.Length; i++)
             {
