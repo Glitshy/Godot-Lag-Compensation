@@ -71,6 +71,23 @@ namespace PG.LagCompensation.Parametric
             _simulationObjects.Remove(item);
         }
 
+        /// <summary>
+        /// Get count of collections managed by this
+        /// </summary>
+        public static int Count => _simulationObjects.Count;
+
+        /// <summary>
+        /// Get collection managed by this at given index
+        /// </summary>
+        public static HitColliderCollection GetAtIndex(int index)
+        {
+            if (index < 0 || index >= _simulationObjects.Count)
+            {
+                return null;
+            }
+
+            return _simulationObjects[index];
+        }
 
         #region Raycasting
 
