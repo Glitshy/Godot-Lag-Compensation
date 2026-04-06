@@ -154,7 +154,19 @@ namespace PG.LagCompensation.Parametric
             }
         }
 
+        /// <summary>
+        /// (Re)Initialize ring buffers of this and all managed colliders, neccessary after e.g. changing the <see cref="GetHistoryLength"/> value.
+        /// Note: This will also clear all values.
+        /// </summary>
+        public override void InitializeBuffers()
+        {
+            base.InitializeBuffers();
 
+            for (int i = 0; i < hitColliders.Length; i++)
+            {
+                hitColliders[i].InitializeBuffers();
+            }
+        }
 
         /// <summary>
         /// Check ray against current transform. Cast against all HitColliders in the collection.

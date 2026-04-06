@@ -170,6 +170,20 @@ namespace PG.LagCompensation.Hybrid
         }
 
         /// <summary>
+        /// (Re)Initialize ring buffers of this and all managed trackers, neccessary after e.g. changing the <see cref="GetHistoryLength"/> value.
+        /// Note: This will also clear all values.
+        /// </summary>
+        public override void InitializeBuffers()
+        {
+            base.InitializeBuffers();
+
+            for (int i = 0; i < trackers.Length; i++)
+            {
+                trackers[i].InitializeBuffers();
+            }
+        }
+
+        /// <summary>
         /// For all nodes of collection: Set transform corresponding to cached value from <c>CalculateAndCacheInterpolatedPositionRotation</c>. 
         /// Can optionally be forced NOT to save current state, useful when simulating multiple positions in a single frame and saving preformance. 
         /// Always call ResetStateTransform() at the end of the frame
