@@ -14,11 +14,27 @@ namespace PG.LagCompensation.Parametric
     public static class ColliderCastSystem
     {
         /// <summary>
-        /// Number of frames to save before removing oldest frames from list
+        /// Number of frames to store before removing oldest frames from buffer
         /// </summary>
         private static int _frameHistoryLength = 40;
         public static int GetFrameHistoryLength => _frameHistoryLength;
-        public static int SetFrameHistoryLength { set => _frameHistoryLength = value; }
+        /// <summary>
+        /// Set the maximum number of frame to store before removing the oldest frame from the buffer.
+        /// <br></br>
+        /// Setting this will re-initlaized all buffers, loosing all stored data
+        /// </summary>
+        public static int SetFrameHistoryLength
+        {
+            set
+            {
+                _frameHistoryLength = value;
+
+                for (int i = 0; i < _simulationObjects.Count; i++)
+                {
+                    _simulationObjects[i].InitializeBuffers();
+                }
+            }
+        }
 
         /// <summary>
         /// Interval (in seconds) between adding frames to list
