@@ -22,6 +22,7 @@ size = Vector3(0.04, 0.13, 0.06)
 script = ExtResource("1_rdprx")
 raycaster = NodePath("RayCast3D")
 testType = 3
+parametricCastLayers = 3
 doCheckAfterSeconds = 0.9
 loopCount = 1000
 raycastProjectileSpeed = 200.0

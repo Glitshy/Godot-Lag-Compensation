@@ -77,15 +77,25 @@ namespace PG.LagCompensation.Hybrid
             return trackers[i];
         }
 
+        /// <summary>
+        /// Layers of this collection, but not of the <see cref="HybridTracker"/> children
+        /// </summary>
+        private uint _layers = 1;
 
         /// <summary>
-        /// Get Radius of bounding sphere
+        /// Layers of this collection, but not of the <see cref="HybridTracker"/> children
+        /// Note: While it is possible to change these layers at runtime, the value will not be interpolated/cached.
+        /// This only affect this collection and not all the <see cref="HybridTracker"/> children of this node, of which the physics layer will remain unchanged.
         /// </summary>
+        [Export(PropertyHint.Layers3DPhysics)]
+        public uint layers
+        {
+            get { return _layers; }
+            set { _layers = value; }
+        }
+
         public override float GetBoundingSphereRadius => _radius;
 
-        /// <summary>
-        /// Get squared Radius of bounding sphere (better performance in some cases)
-        /// </summary>
         public override float GetBoundingSphereRadiusSquared => _radius * _radius;
 
         /// <summary>
@@ -126,6 +136,20 @@ namespace PG.LagCompensation.Hybrid
         /// <summary>
         /// Add postion/rotation with timestamp to list of this collection node as well as all nodes managed by this. Call this after doing movement updates.
         /// </summary>
+        public override void AddFrame(double time)
+        {
+            base.AddFrame(time);
+
+            for (int i = 0; i < trackers.Length; i++)
+            {
+                trackers[i].AddFrame(time);
+            }
+        }
+
+        /// <summary>
+        /// Add postion/rotation with timestamp to list of this collection node as well as all nodes managed by this. Call this after doing movement updates.
+        /// </summary>
+        [ObsoleteAttribute("Use 'AddFrame' instead, which will also call AddFrame on all children.", false)]
         public void AddFrameAll(double time)
         {
             AddFrame(time);

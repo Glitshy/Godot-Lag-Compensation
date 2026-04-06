@@ -17,11 +17,27 @@ namespace PG.LagCompensation.Hybrid
     public static class HybridTrackerSystem
     {
         /// <summary>
-        /// Number of frames to save before removing oldest frames from list
+        /// Number of frames to store before removing oldest frames from buffer
         /// </summary>
         private static int _frameHistoryLength = 40;
         public static int GetFrameHistoryLength => _frameHistoryLength;
-        public static int SetFrameHistoryLength { set => _frameHistoryLength = value; }
+        /// <summary>
+        /// Set the maximum number of frame to store before removing the oldest frame from the buffer.
+        /// <br></br>
+        /// Setting this will re-initlaized all buffers, loosing all stored data
+        /// </summary>
+        public static int SetFrameHistoryLength
+        {
+            set
+            {
+                _frameHistoryLength = value;
+
+                for (int i = 0; i < _simulationObjects.Count; i++)
+                {
+                    _simulationObjects[i].InitializeBuffers();
+                }
+            }
+        }
 
         /// <summary>
         /// Interval (in seconds) between adding frames to list
@@ -30,6 +46,12 @@ namespace PG.LagCompensation.Hybrid
         public static float GetStoreInterval => _storeInterval;
         public static float SetStoreInterval { set => _storeInterval = value; }
 
+        /// <summary>
+        /// This is called by <see cref="TrackerBase.GetCurrentTime"/>. By default simply calculates <c>Time.GetTicksUsec() * 1e-6</c>.
+        /// <br></br>
+        /// Overriding this allows changing the current-time logic. Useful when e.g. using a tick system independent of time since statup.
+        /// </summary>
+        public static Func<double> GetCurrentTime = () => { return Time.GetTicksUsec() * 1e-6; };
 
         /// <summary>
         /// List of all trackers in scene
@@ -61,7 +83,7 @@ namespace PG.LagCompensation.Hybrid
         {
             for (int i = 0; i < _simulationObjects.Count; i++)
             {
-                _simulationObjects[i].AddFrameAll(time);
+                _simulationObjects[i].AddFrame(time);
             }
         }
 
@@ -136,8 +158,9 @@ namespace PG.LagCompensation.Hybrid
         /// <param name="direction">Direction of raycast.</param>
         /// <param name="range">Range of raycast.</param>
         /// <param name="exclude">Exclude this collection from being checked.</param>
+        /// <param name="layerMask">Only considers HybridTrackers on layers included on this mask. Default value includes all layers.</param>
         /// <returns>Has anything been hit?</returns>
-        public static void RaycastPrepare(Vector3 origin, Vector3 direction, float range, HybridTrackerCollection[] exclude = null)
+        public static void RaycastPrepare(Vector3 origin, Vector3 direction, float range, HybridTrackerCollection[] exclude = null, uint layerMask = uint.MaxValue)
         {
             for (int i = 0; i < _simulationObjects.Count; i++)
             {
@@ -155,9 +178,16 @@ namespace PG.LagCompensation.Hybrid
                     continue;
                 }
 
-                if (_simulationObjects[i].CheckBoundingSphereCached(origin, direction))
+                // check if any layer of the collection is also on the mask
+                uint layers = _simulationObjects[i].layers;
+                if ((layers & layerMask) == 0)
                 {
-                    if (_simulationObjects[i].CheckBoundingSphereDistanceCached(origin, direction, range))
+                    continue;
+                }
+
+                if (_simulationObjects[i].CheckBoundingSphere(true, origin, direction))
+                {
+                    if (_simulationObjects[i].CheckBoundingSphereDistance(true, origin, direction, range))
                     {
                         // the collection bounding sphere has been intersected --> must do detailed checking of the children
                         _simulationObjects[i].InterpolateFully();

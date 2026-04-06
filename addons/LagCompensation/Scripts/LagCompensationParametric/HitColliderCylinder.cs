@@ -88,21 +88,9 @@ namespace PG.LagCompensation.Parametric
 
         #region Raycasting
 
-        public override bool ColliderCastLive(Vector3 rayOrigin, Vector3 rayDirection, float range, out ColliderCastHit hit, bool includeInternal = false)
+        public override bool ColliderCast(bool useCached, Vector3 rayOrigin, Vector3 rayDirection, float range, out ColliderCastHit hit, bool includeInternal = false)
         {
-            if (ParametricRaycastCylinder(GlobalPosition, GlobalQuaternion, _height, _radius, rayOrigin, rayDirection, out hit))
-            {
-                return hit.entryDistance <= range && (hit.entryDistance >= 0f || includeInternal) && hit.exitDistance >= 0f;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        public override bool ColliderCastCached(Vector3 rayOrigin, Vector3 rayDirection, float range, out ColliderCastHit hit, bool includeInternal = false)
-        {
-            if (ParametricRaycastCylinder(_cachedPosRot.position, _cachedPosRot.rotation, _height, _radius, rayOrigin, rayDirection, out hit))
+            if (ParametricRaycastCylinder(useCached ? _cachedPosRot.position : GlobalPosition, useCached ? _cachedPosRot.rotation : GlobalQuaternion, _height, _radius, rayOrigin, rayDirection, out hit))
             {
                 return hit.entryDistance <= range && (hit.entryDistance >= 0f || includeInternal) && hit.exitDistance >= 0f;
             }

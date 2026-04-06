@@ -1,5 +1,5 @@
 # Raycast Lag Compensation
-![Version](https://img.shields.io/badge/version-1.3-blue.svg)
+![Version](https://img.shields.io/badge/version-1.4-blue.svg)
 $~~~~~$
 ![Engine](https://img.shields.io/badge/Godot-%23FFFFFF.svg?logo=godot-engine)
 ![Engine_Version](https://img.shields.io/badge/4.4-white.svg)
@@ -23,8 +23,8 @@ Unity Engine version can be found [here](https://github.com/Glitshy/Lag-Compensa
 
 
 # What's included
-This project contains two systems: 
-- My initial approach which functions by setting the transforms of each individual CollisionShape3D of each player to the postion and rotation it was a given time ago (effectively replaced by the third system)
+This project contains two/three systems: 
+- My initial approach which functions by setting the transforms of each individual CollisionShape3D of each "tracker" to the postion and rotation it was a given time ago (effectively replaced by the third system)
 - My second approach with custom collider nodes (sphere, capsule, cylinder and box similar to native Godot's physics CollisionShape3D, as well as a custom mesh shape) and my own raycasting maths called "collider cast"
 - My third approach which uses physical collision shapes (like the first approach) but bundles them in collections (like the second approach) and first checks the bounding sphere of the collection before updating the transforms
 
@@ -75,8 +75,11 @@ Inherits from the abstract class "TrackerBase". Is itself also an abstract calls
 The transforms of these colliders are never overridden as the custom hit detection code allows passing arbitrary positions and rotations as parameters.
 
 ## "HitColliderCollection"
-Inherits from the abstract class "HitCollider". Each entity (i.e. player) with one or more "HitColliderGeneric" should have one "HitColliderCollection" at the geometric center. 
-A radius value should be set to cover all colliders (keep in mind animations). This radius defines a bounding sphere and allows for quick assessment whether any of the colliders in this collection might be hit by a collider cast.
+Inherits from the abstract class "HitCollider". Each entity (i.e. player) with one or more "HitColliderGeneric" should have one "HitColliderCollection" at the geometric center. A radius value should be set to cover all colliders (keep in mind animations). This radius defines a bounding sphere and allows for quick assessment whether any of the colliders in this collection might be hit by a collider cast.  
+
+**New with Version 1.4:**
+Collections now have layers (32 bit uint, similar to the standard physics layers) which allow limiting whether a raycast should be able to hit a collection or not. 
+This layer is also stored and interpolated when "reversing time" and disabling all layers effectively prevents the collection from being hit at all.
 
 ## "ColliderCastSystem"
 Static class containing a static list of all "HitColliderCollection" nodes and the functions to simulate the postions and rotations at a given point in time and perform a collider cast.
@@ -91,7 +94,7 @@ Parent class of all HybridTrackers. Implements timestamps and some shared functi
 Allows storing the position and rotation of a target node, typically a CollisionShape3D, and moving the transform with interpolation to it's position and rotation in the past.
 
 ## "HybridTrackerCollection"
-Inherits from the abstract class "TrackerBase". Each entity (i.e. player) with one or more "HybridTracker" should have one "HybridTrackerCollection" at the geometric center. 
+Inherits from the abstract class "TrackerBase". Each entity (i.e. player) with one or more "HybridTracker" should have one "HybridTrackerCollection" at the geometric center.
 A radius value should be set to cover all colliders (keep in mind animations). This radius defines a bounding sphere and allows for quick assessment whether any of the colliders in this collection might be hit by a raycast.
 
 ## "HybridTrackerSystem"

@@ -10,10 +10,12 @@ namespace PG.LagCompensation.Parametric
 {
     /// <summary>
     /// Collection of hit colliders with different shapes. On cast checking the bounding sphere of this is checked first before any child colliders.
+    /// <br></br>
+    /// Allows setting layers, limiting which raycasts will hit the colliders in this collection or not. Layers are stored together with position/rotation and interpolated according to the current settings.
     /// </summary>
     [GlobalClass]
     [Tool]
-    public partial class HitColliderCollection : TrackerBase
+    public partial class HitColliderCollection : TrackerLayeredBase
     {
         public override Node3D GetTargetNode => this;
         public override int GetHistoryLength => ColliderCastSystem.GetFrameHistoryLength;
@@ -79,10 +81,34 @@ namespace PG.LagCompensation.Parametric
             return hitColliders[i];
         }
 
+        /// <summary>
+        /// Layers of this collection and all its <see cref="HitColliderGeneric"/> children
+        /// </summary>
+        private uint _layers = 1;
+
+        /// <summary>
+        /// Layers of this collection and all its <see cref="HitColliderGeneric"/> children
+        /// </summary>
+        [Export(PropertyHint.Layers3DPhysics)]
+        public uint layers
+        {
+            get { return _layers; }
+            set { _layers = value; }
+        }
+
+        protected override uint GetLayers => _layers;
+
+        private InterpolationMode _interpolationMode = InterpolationMode.Balanced;
+
+        [Export]
+        public override InterpolationMode interpolationMode
+        {
+            get { return _interpolationMode; }
+            set { _interpolationMode = value; }
+        }
 
         public override float GetBoundingSphereRadius => _radius;
         public override float GetBoundingSphereRadiusSquared => _radius * _radius;
-
 
         public override void _Ready()
         {
@@ -110,9 +136,23 @@ namespace PG.LagCompensation.Parametric
         /// <summary>
         /// Add postion/rotation with timestamp to list of this collection node as well as all nodes managed by this. Call this after doing movement updates.
         /// </summary>
+        public override void AddFrame(double time)
+        {
+            base.AddFrame(time);
+
+            for (int i = 0; i < hitColliders.Length; i++)
+            {
+                hitColliders[i].AddFrame(time);
+            }
+        }
+
+        /// <summary>
+        /// Add postion/rotation with timestamp to list of this collection node as well as all nodes managed by this. Call this after doing movement updates.
+        /// </summary>
+        [ObsoleteAttribute("Use 'AddFrame' instead, which will also call AddFrame on all children.", false)]
         public void AddFrameAll(double time)
         {
-            AddFrame(time);
+            base.AddFrame(time);
 
             for (int i = 0; i < hitColliders.Length; i++)
             {
@@ -140,7 +180,57 @@ namespace PG.LagCompensation.Parametric
             }
         }
 
+        public override void InitializeBuffers()
+        {
+            base.InitializeBuffers();
 
+            for (int i = 0; i < hitColliders.Length; i++)
+            {
+                hitColliders[i].InitializeBuffers();
+            }
+        }
+
+        /// <summary>
+        /// Check ray against current transform. Cast against all HitColliders in the collection.
+        /// </summary>
+        /// <param name="useCached"></param>
+        /// <param name="origin">Origin of cast</param>
+        /// <param name="direction">Direction of cast</param>
+        /// <param name="range">Range of cast</param>
+        /// <param name="hit">Exit/entry of hit</param>
+        /// <param name="hitColliderIndex">Index of the hit collider in this collection which got hit</param>
+        /// <param name="includeInternal">Include hits where the origin is within the collider</param>
+        /// <returns>Was a collider hit?</returns>
+        public bool ColliderCast(bool useCached, Vector3 origin, Vector3 direction, float range, out ColliderCastHit hit, out int hitColliderIndex, bool includeInternal = false)
+        {
+            hit = ColliderCastHit.Zero;
+            ColliderCastHit newHit;
+            hitColliderIndex = -1;
+
+            for (int i = 0; i < hitColliders.Length; i++)
+            {
+
+                if (hitColliders[i].CheckBoundingSphere(useCached, origin, direction)) // CheckBoundingSphere   //CheckBoundingSphereAtTestPosition
+                {
+                    if (hitColliders[i].CheckBoundingSphereDistance(useCached, origin, direction, range))
+                    {
+                        if (hitColliders[i].ColliderCast(useCached, origin, direction, range, out newHit, includeInternal))
+                        {
+                            if (newHit.entryDistance < hit.entryDistance)
+                            {
+                                hitColliderIndex = i;
+                                hit = newHit;
+                            }
+
+                        }
+                    }
+                }
+
+            }
+
+
+            return hit.entryDistance != Mathf.Inf;
+        }
 
         /// <summary>
         /// Check ray against current transform. Cast against all HitColliders in the collection.
@@ -152,35 +242,10 @@ namespace PG.LagCompensation.Parametric
         /// <param name="hitColliderIndex">Index of the hit collider in this collection which got hit</param>
         /// <param name="includeInternal">Include hits where the origin is within the collider</param>
         /// <returns>Was a collider hit?</returns>
+        [ObsoleteAttribute("Use 'ColliderCast' instead.", false)]
         public bool ColliderCastLive(Vector3 origin, Vector3 direction, float range, out ColliderCastHit hit, out int hitColliderIndex, bool includeInternal = false)
         {
-            hit = ColliderCastHit.Zero;
-            ColliderCastHit newHit;
-            hitColliderIndex = -1;
-
-            for (int i = 0; i < hitColliders.Length; i++)
-            {
-
-                if (hitColliders[i].CheckBoundingSphereLive(origin, direction)) // CheckBoundingSphere   //CheckBoundingSphereAtTestPosition
-                {
-                    if (hitColliders[i].CheckBoundingSphereDistanceLive(origin, direction, range))
-                    {
-                        if (hitColliders[i].ColliderCastLive(origin, direction, range, out newHit, includeInternal))
-                        {
-                            if (newHit.entryDistance < hit.entryDistance)
-                            {
-                                hitColliderIndex = i;
-                                hit = newHit;
-                            }
-                                
-                        }
-                    }
-                }
-
-            }
-
-
-            return hit.entryDistance != Mathf.Inf;
+            return ColliderCast(false, origin, direction, range, out hit, out hitColliderIndex, includeInternal);
         }
 
 
@@ -194,35 +259,10 @@ namespace PG.LagCompensation.Parametric
         /// <param name="hitColliderIndex">Index of the hit collider in this collection which got hit</param>
         /// <param name="includeInternal">Include hits where the origin is within the collider</param>
         /// <returns>Was a collider hit?</returns>
+        [ObsoleteAttribute("Use 'ColliderCast' instead.", false)]
         public bool ColliderCastCached(Vector3 origin, Vector3 direction, float range, out ColliderCastHit hit, out int hitColliderIndex, bool includeInternal = false)
         {
-
-            hit = ColliderCastHit.Zero;
-            ColliderCastHit newHit;
-            hitColliderIndex = -1;
-
-            for (int i = 0; i < hitColliders.Length; i++)
-            {
-
-                if (hitColliders[i].CheckBoundingSphereCached(origin, direction)) // CheckBoundingSphere   //CheckBoundingSphereAtTestPosition
-                {
-                    if (hitColliders[i].CheckBoundingSphereDistanceCached(origin, direction, range))
-                    {
-                        if (hitColliders[i].ColliderCastCached(origin, direction, range, out newHit, includeInternal))
-                        {
-                            if (newHit.entryDistance < hit.entryDistance)
-                            {
-                                hitColliderIndex = i;
-                                hit = newHit;
-                            }
-                        }
-                    }
-                }
-
-            }
-
-
-            return hit.entryDistance != Mathf.Inf;
+            return ColliderCast(true, origin, direction, range, out hit, out hitColliderIndex, includeInternal);
         }
 
         

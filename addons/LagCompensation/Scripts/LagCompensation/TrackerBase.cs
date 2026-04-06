@@ -1,6 +1,8 @@
 using Godot;
+using PG.LagCompensation.Parametric;
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices.Marshalling;
 
 namespace PG.LagCompensation.Base
 {
@@ -16,7 +18,10 @@ namespace PG.LagCompensation.Base
         /// </summary>
         public abstract Node3D GetTargetNode { get; }
 
-        private List<(double, TransformFrameData)> _frameData = new List<(double, TransformFrameData)>(); // ValueTuple, which is a value type
+        // Using ring buffers instead of a List<(double, TransformFrameData)>, as a list becomes less performant the more items there are when calling RemoveAt(0)
+        // intilaize and update these buffers inside of AddFrame()
+        protected RingBuffer<double> _bufferTime;
+        protected RingBuffer<TransformFrameData> _bufferTransform;
 
         /// <summary>
         /// Maximum length of FrameData List
@@ -24,7 +29,9 @@ namespace PG.LagCompensation.Base
         public abstract int GetHistoryLength { get; }
 
         /// <summary>
-        /// Assigned by 'SetStateTransform()'. Use this position/rotation when doing the bounding sphere check and collider cast check. This means we don't need to override the transform position/rotation for lag compensation.
+        /// Assigned by <see cref="InterpolateAndCacheAtIndex"/>.
+        /// Use this position/rotation when doing the bounding sphere check and collider cast check.
+        /// This means we don't need to override the transform position/rotation for lag compensation.
         /// </summary>
         protected TransformFrameData _cachedPosRot;
 
@@ -39,6 +46,14 @@ namespace PG.LagCompensation.Base
         /// This is reset to <c>false</c> whenever <c>_cachedTime</c> and <c>_cachedPosRot</c> are set
         /// </summary>
         protected bool _cachedIsUpToDate;
+
+        /// <summary>
+        /// When interpolating to a target time where there is a older frame but no newer frame --> interpolate between this 'newest older' frame and the current position/rotation. 
+        /// For that interolation, this time will be used.
+        /// By default, this uses <c>Time.GetTicksUsec() * 1e-6</c>.
+        /// Depending on the specific implementation, overring this might be neccessary (e.g. when using a tick system independent of time since statup).
+        /// </summary>
+        protected virtual double GetCurrentTime => Time.GetTicksUsec() * 1e-6;
 
         /// <summary>
         /// Get Radius of bounding sphere
@@ -58,44 +73,80 @@ namespace PG.LagCompensation.Base
 
         #region Raycasting
 
-
+        /// <summary>
+        /// Check if a line defined by origin and direction intersects with the bounding sphere of this collider. Uses live/cached transform (for cached, this is more performant than overriding transforms).
+        /// </summary>
+        /// <returns>True --> intersects, False --> No intersection</returns>
+        public bool CheckBoundingSphere(bool useCached, Vector3 origin, Vector3 direction)
+        {
+            return GetBoundingSphereRadiusSquared >= ColliderMath.GetSquaredMinimumDistanceBetwenPointAndLine(useCached ? GetCachedPosRot.position : GetTargetNode.GlobalPosition, origin, direction);
+        }
 
         /// <summary>
         /// Check if a line defined by origin and direction intersects with the bounding sphere of this collider.
         /// </summary>
         /// <returns>True --> intersects, False --> No intersection</returns>
+        [ObsoleteAttribute("Use 'CheckBoundingSphere' instead.", false)]
         public bool CheckBoundingSphereLive(Vector3 origin, Vector3 direction)
         {
-            return GetBoundingSphereRadiusSquared >= ColliderMath.GetSquaredMinimumDistanceBetwenPointAndLine(GetTargetNode.GlobalPosition, origin, direction);
+            return CheckBoundingSphere(false, origin, direction);
         }
 
         /// <summary>
         /// Check if a line defined by origin and direction intersects with the bounding sphere of this collider. Uses cached transform, more performant than overriding transforms.
         /// </summary>
         /// <returns>True --> intersects, False --> No intersection</returns>
+        [ObsoleteAttribute("Use 'CheckBoundingSphere' instead.", false)]
         public bool CheckBoundingSphereCached(Vector3 origin, Vector3 direction)
         {
-            return GetBoundingSphereRadiusSquared >= ColliderMath.GetSquaredMinimumDistanceBetwenPointAndLine(GetCachedPosRot.position, origin, direction);
+            return CheckBoundingSphere(true, origin, direction);
+        }
+
+        /// <summary>
+        /// Check if bounding sphere at current/cached transform is within range
+        /// </summary>
+        /// <param name="enlargeRadius">Add this value to the bounding sphere radius. Useful for doing capsule-sphere-overlap checks.</param>
+        /// <returns></returns>
+        public bool CheckBoundingSphereDistance(bool useCached, Vector3 origin, Vector3 direction, float range, float enlargeRadius = 0)
+        {
+            /*
+            // old system, which incorrectly warped the bounding sphere into a kind of bounding 'cylinder'
+            // while this behaves identically when the sphere center lies exactly on the ray line or the range was much greater than the distance, 
+            // but it was giving false positives when the range was approximately the distance to the sphere surface, especially when the ray was approxximately tangential
+
+            float closestDistance = ColliderMath.GetTValueAlongLine(origin, origin + direction, useCached ? GetCachedPosRot.position : GetTargetNode.GlobalPosition);
+
+            return closestDistance >= -GetBoundingSphereRadius && closestDistance <= range + GetBoundingSphereRadius; // minimum distance larger than negative radius! This allows casts which start within the bounding sphere
+            */
+
+
+            Vector3 center = useCached ? GetCachedPosRot.position : GetTargetNode.GlobalPosition;
+
+            float closestDistance = ColliderMath.GetTValueAlongLine(origin, origin + direction, center);
+
+            // calculate the closest point to the sphere along the 'direction' vector, but clamped to the maximum range
+            Vector3 closestPoint = origin + direction * Mathf.Clamp(closestDistance, 0f, range);
+
+            // check if the closest point is inside the sphere radius. This allows casts which start within the bounding sphere.
+            return (closestPoint - center).LengthSquared() <= (GetBoundingSphereRadius + enlargeRadius) * (GetBoundingSphereRadius + enlargeRadius);
         }
 
         /// <summary>
         /// Check if bounding sphere at current transform is within range
         /// </summary>
+        [ObsoleteAttribute("Use 'CheckBoundingSphereDistance' instead.", false)]
         public bool CheckBoundingSphereDistanceLive(Vector3 origin, Vector3 direction, float range)
         {
-            float closestDistance = ColliderMath.GetTValueAlongLine(origin, origin + direction, GetTargetNode.GlobalPosition);
-
-            return closestDistance >= -GetBoundingSphereRadius && closestDistance <= range + GetBoundingSphereRadius; // minimum distance larger than negative radius! This allows casts which start within the bounding sphere
+            return CheckBoundingSphereDistance(false, origin, direction, range);
         }
 
         /// <summary>
         /// Check if bounding sphere at cached transform is within range
         /// </summary>
+        [ObsoleteAttribute("Use 'CheckBoundingSphereDistance' instead.", false)]
         public bool CheckBoundingSphereDistanceCached(Vector3 origin, Vector3 direction, float range)
         {
-            float closestDistance = ColliderMath.GetTValueAlongLine(origin, origin + direction, GetCachedPosRot.position);
-
-            return closestDistance >= -GetBoundingSphereRadius && closestDistance <= range + GetBoundingSphereRadius; // minimum distance larger than negative radius! This allows casts which start within the bounding sphere
+            return CheckBoundingSphereDistance(true, origin, direction, range);
         }
 
         #endregion
@@ -105,12 +156,20 @@ namespace PG.LagCompensation.Base
         /// <summary>
         /// Add postion/rotation with timestamp to list. Call this after doing movement updates!
         /// </summary>
-        public void AddFrame(double time)
+        public virtual void AddFrame(double time)
         {
-            if (_frameData.Count >= GetHistoryLength) // remove oldest stored frame
+            // initialize buffers if it hasn't happened yet
+            if (_bufferTime == null)
             {
-                _frameData.RemoveAt(0);
+                _bufferTime = new RingBuffer<double>(GetHistoryLength);
             }
+
+            if (_bufferTransform == null)
+            {
+                _bufferTransform = new RingBuffer<TransformFrameData>(GetHistoryLength);
+            }
+
+            // unlike with List<T>, buffer will automatically take care of limiting the length
 
             if (GetTargetNode == null)
             {
@@ -118,12 +177,13 @@ namespace PG.LagCompensation.Base
                 return;
             }
 
-            _frameData.Add((time, new TransformFrameData(GetTargetNode)));
+            _bufferTime.Add(time);
+            _bufferTransform.Add(new TransformFrameData(GetTargetNode));
         }
 
 
         /// <summary>
-        /// Caches interpolated position and transform at the given time. Call <c>ColliderCastAtCachedPositionRotation()</c> to use this cached pos/rot
+        /// Caches interpolated position and transform at the given time. Call "Cached" parameter/method-suffix to use this cached pos/rot.
         /// </summary>
         /// <param name="simulationTime"></param>
         public void CalculateAndCacheInterpolatedPositionRotation(double simulationTime)
@@ -134,33 +194,57 @@ namespace PG.LagCompensation.Base
                 return;
             }
 
-            for (int i = _frameData.Count - 1; i >= 0; i--)
+            for (int i = _bufferTime.Count - 1; i >= 0; i--)
             {
-                if (_frameData[i].Item1 <= simulationTime) // if the data at [i] is older than the desired simulation time
+                if (_bufferTime[i] <= simulationTime) // if the data at [i] is older than the desired simulation time
                 {
-                    if (i < _frameData.Count - 1) // if there is a newer frame
+                    double fraction;
+                    if (i < _bufferTime.Count - 1) // there is a newer frame --> interpolate between these two
                     {
-                        double fraction = Math.Clamp((simulationTime - _frameData[i].Item1) / (_frameData[i + 1].Item1 - _frameData[i].Item1), 0d, 1d);
-
-                        _cachedPosRot = TransformFrameData.Interpolate(_frameData[i].Item2, _frameData[i + 1].Item2, fraction);
+                        fraction = Math.Clamp((simulationTime - _bufferTime[i]) / (_bufferTime[i + 1] - _bufferTime[i]), 0d, 1d);
                     }
-                    else // there is no newer frame --> interpolate between this 'newest' frame and the current position!
+                    else // there is no newer frame --> interpolate between this 'newest' frame and the current time
                     {
-                        double currentTime = Time.GetTicksUsec() * 1e-6; // TODO: Check if replacing this time function with something else is required
-
-                        double fraction = Math.Clamp((simulationTime - _frameData[i].Item1) / (currentTime - _frameData[i].Item1), 0d, 1d);
-
-                        _cachedPosRot = TransformFrameData.Interpolate(_frameData[i].Item2, new TransformFrameData(GetTargetNode), fraction); // getting current transform and rotation is more performance intensive than cached frame data
+                        fraction = Math.Clamp((simulationTime - _bufferTime[i]) / (GetCurrentTime - _bufferTime[i]), 0d, 1d);
                     }
+
+                    InterpolateAndCacheAtIndex(i, fraction);
+
                     _cachedTime = simulationTime;
                     _cachedIsUpToDate = false;
                     return;
                 }
             }
 
-            GD.PrintErr("Tracker interpolation failed. Target Node " + GetTargetNode.Name + ", Tracker Node " + this.Name + " and list count " + _frameData.Count);
+            GD.PrintErr("Tracker interpolation failed. Target Node " + GetTargetNode.Name + ", Tracker Node " + this.Name + " and buffer count " + _bufferTime.Count);
         }
 
+        /// <summary>
+        /// Caches interpolated position and transform between the given index and index+1. Will use live transform if index+1 would exceed length of list. 
+        /// Can be overridden to interpolate additional parameters, e.g. layers or scale
+        /// </summary>
+        protected virtual void InterpolateAndCacheAtIndex(int olderIndex, double t)
+        {
+            if (olderIndex < _bufferTransform.Count - 1) // if there is a newer frame
+            {
+                _cachedPosRot = TransformFrameData.Interpolate(_bufferTransform[olderIndex], _bufferTransform[olderIndex + 1], t);
+            }
+            else // there is no newer frame --> interpolate between this 'newest' frame and the current position!
+            {
+                // Note: getting current transform and rotation is more performance intensive than cached frame data
+                _cachedPosRot = TransformFrameData.Interpolate(_bufferTransform[olderIndex], new TransformFrameData(GetTargetNode), t);
+            }
+        }
+
+        /// <summary>
+        /// (Re)Initialize ring buffers, neccessary after e.g. changing the <see cref="GetHistoryLength"/> value.
+        /// Note: This will also clear all values.
+        /// </summary>
+        public virtual void InitializeBuffers()
+        {
+            _bufferTime = new RingBuffer<double>(GetHistoryLength);
+            _bufferTransform = new RingBuffer<TransformFrameData>(GetHistoryLength);
+        }
 
         #endregion
 
