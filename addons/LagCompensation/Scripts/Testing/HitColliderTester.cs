@@ -14,11 +14,13 @@ namespace PG.LagCompensation.Testing
     /// </summary>
     public partial class HitColliderTester : Node3D
     {
-        
+
         [Export]
         private float maxDistance = 10f;
         [Export]
         private bool includeInternalHits = false;
+        [Export(PropertyHint.Layers3DPhysics)]
+        private uint maskLayers = 1;
         [Export]
         private HitColliderCollection collection;
         [Export]
@@ -128,7 +130,7 @@ namespace PG.LagCompensation.Testing
 
                 for (int k = 0; k < loopCount; k++)
                 {
-                    hits[i] = col.ColliderCastLive(rayOrigin, rayDirection, maxDistance, out ColliderCastHit _hit, includeInternalHits);
+                    hits[i] = col.ColliderCast(false, rayOrigin, rayDirection, maxDistance, out ColliderCastHit _hit, includeInternalHits);
                 }
 
                 summedTime[i] = Time.GetTicksUsec() * 1e-6 - t;
@@ -158,7 +160,7 @@ namespace PG.LagCompensation.Testing
 
                 for (int k = 0; k < loopCount; k++)
                 {
-                    hits[i] = col.CheckBoundingSphereDistanceLive(rayOrigin, rayDirection, maxDistance);
+                    hits[i] = col.CheckBoundingSphereDistance(false, rayOrigin, rayDirection, maxDistance);
                 }
 
                 summedTime[i] = Time.GetTicksUsec() * 1e-6 - t;
@@ -196,7 +198,7 @@ namespace PG.LagCompensation.Testing
             Vector3 o = GlobalPosition;
             Vector3 d = GlobalBasis.Z;
 
-            if (ColliderCastSystem.ColliderCastLive(o, d, maxDistance, out _hit, out HitColliderCollection collection, out int hitColIndex, includeInternal: includeInternalHits))
+            if (ColliderCastSystem.ColliderCast(false, o, d, maxDistance, out _hit, out HitColliderCollection collection, out int hitColIndex, includeInternal: includeInternalHits, layerMask: maskLayers))
             {
                 ColliderDrawing.DrawLine(_hit.entryPoint, _hit.entryPoint + _hit.entryNormal, Color.Color8(0, 127, 127));
                 if (_hit.entryDistance >= 0)

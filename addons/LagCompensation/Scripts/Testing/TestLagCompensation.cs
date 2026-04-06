@@ -27,6 +27,18 @@ namespace PG.LagCompensation.Testing
         private TestType testType;
 
         /// <summary>
+        /// Layers for <see cref="HybridTrackerSystem"/>
+        /// </summary>
+        [Export(PropertyHint.Layers3DPhysics)]
+        private uint hybridCastLayers = 1;
+
+        /// <summary>
+        /// Layers for <see cref="ColliderCastSystem"/>
+        /// </summary>
+        [Export(PropertyHint.Layers3DPhysics)]
+        private uint parametricCastLayers = 1;
+
+        /// <summary>
         /// Do check after X seconds
         /// </summary>
         [Export]
@@ -116,6 +128,8 @@ namespace PG.LagCompensation.Testing
                     TestParametric(currentTime - catchUpTime, currentTime, true); // do this for debug drawing
                     TestPhysics(currentTime - catchUpTime, currentTime, true, true); // do this for debug drawing
 
+                    // ---
+
                     double previousTime = Time.GetTicksUsec() * 1e-6; // for elapsed time performance calculation
                     for (int i = 0; i < loopCount; i++)
                     {
@@ -124,6 +138,8 @@ namespace PG.LagCompensation.Testing
                     summedTimeParametric = Time.GetTicksUsec() * 1e-6 - previousTime;
 
                     GD.Print("summedTimeParametric " + summedTimeParametric);
+
+                    // ---
 
                     previousTime = Time.GetTicksUsec() * 1e-6;
                     for (int i = 0; i < loopCount; i++)
@@ -134,6 +150,7 @@ namespace PG.LagCompensation.Testing
 
                     GD.Print("summedTimePhysicalOptimized " + summedTimePhysicalOptimized);
 
+                    // ---
 
                     previousTime = Time.GetTicksUsec() * 1e-6;
                     for (int i = 0; i < loopCount; i++)
@@ -201,7 +218,7 @@ namespace PG.LagCompensation.Testing
                         HybridTrackerSystem.DebugDrawCollidersCached();
                     }
                 }
-                
+
                 if (PhysicsDoOneCast(iterationCount, useOptimized, debugDraw))
                 {
                     if (debugDraw)
@@ -238,7 +255,7 @@ namespace PG.LagCompensation.Testing
             if (useOptimized)
             {
                 // check bounding sphere intersection with collections
-                HybridTrackerSystem.RaycastPrepare(start, new Vector3(0, 0, 1), iterationDistance);
+                HybridTrackerSystem.RaycastPrepare(start, new Vector3(0, 0, 1), iterationDistance, layerMask: hybridCastLayers);
             }
 
             raycaster.ForceRaycastUpdate(); // do raycast
@@ -276,7 +293,7 @@ namespace PG.LagCompensation.Testing
         /// Using custom hit colliders
         /// </summary>
         /// <param name="testTime"></param>
-        private void TestParametric(double testTime, double currentTime, bool debugDraw)
+        private void TestParametric(double testTime, double currentTime, bool debugDraw, int testType = 0)
         {
             double simulationTime = testTime;
 
@@ -303,7 +320,7 @@ namespace PG.LagCompensation.Testing
                     }
                 }
 
-                if (ParametricDoOneCast(iterationCount, debugDraw))
+                if (ParametricDoOneCast(iterationCount, debugDraw, testType))
                 {
                     if (debugDraw)
                     {
@@ -322,7 +339,7 @@ namespace PG.LagCompensation.Testing
         /// <summary>
         /// Do a single raycast starting at Vector3.Zero and going in (0,0,1) direction with 'iterationCount * raycastUpdateInterval * raycastProjectileSpeed' steps
         /// </summary>
-        private bool ParametricDoOneCast(int iterationCount, bool debugDraw)
+        private bool ParametricDoOneCast(int iterationCount, bool debugDraw, int testType = 0)
         {
             float iterationDistance = raycastProjectileSpeed * raycastUpdateInterval;
             Vector3 pos = Vector3.Zero;
@@ -331,7 +348,22 @@ namespace PG.LagCompensation.Testing
 
             //GD.Print("Parametric raycast from " + start + " to " + (start + dir * iterationDistance) + "(iteration " + iterationCount + ")");
 
-            if (ColliderCastSystem.ColliderCastCached(start, dir, iterationDistance, out ColliderCastHit hit, out HitColliderCollection hitCollection, out int hitIndex))
+            bool hitBool;
+            ColliderCastHit hit;
+            HitColliderCollection hitCollection;
+            int hitIndex;
+
+            switch (testType)
+            {
+                default:
+                    hitBool = ColliderCastSystem.ColliderCast(true, start, dir, iterationDistance, out hit, out hitCollection, out hitIndex, layerMask: parametricCastLayers);
+                    break;
+                case 1:
+                    hitBool = ColliderCastSystem.ColliderCastCached(start, dir, iterationDistance, out hit, out hitCollection, out hitIndex, layerMask: parametricCastLayers);
+                    break;
+            }
+
+            if (hitBool)
             {
                 if (debugDraw)
                 {
@@ -359,7 +391,7 @@ namespace PG.LagCompensation.Testing
 
             }
 
-            
+
 
 
             return false;

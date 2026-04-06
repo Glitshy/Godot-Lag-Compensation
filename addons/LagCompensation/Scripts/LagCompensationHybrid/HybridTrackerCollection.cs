@@ -81,6 +81,22 @@ namespace PG.LagCompensation.Hybrid
             return trackers[i];
         }
 
+        /// <summary>
+        /// Layers of this collection, but not of the <see cref="HybridTracker"/> children
+        /// </summary>
+        private uint _layers = 1;
+
+        /// <summary>
+        /// Layers of this collection, but not of the <see cref="HybridTracker"/> children
+        /// Note: While it is possible to change these layers at runtime, the value will not be interpolated/cached.
+        /// This only affect this collection and not all the <see cref="HybridTracker"/> children of this node, of which the physics layer will remain unchanged.
+        /// </summary>
+        [Export(PropertyHint.Layers3DPhysics)]
+        public uint layers
+        {
+            get { return _layers; }
+            set { _layers = value; }
+        }
 
         public override float GetBoundingSphereRadius => _radius;
 

@@ -158,8 +158,9 @@ namespace PG.LagCompensation.Hybrid
         /// <param name="direction">Direction of raycast.</param>
         /// <param name="range">Range of raycast.</param>
         /// <param name="exclude">Exclude this collection from being checked.</param>
+        /// <param name="layerMask">Only considers HybridTrackers on layers included on this mask. Default value includes all layers.</param>
         /// <returns>Has anything been hit?</returns>
-        public static void RaycastPrepare(Vector3 origin, Vector3 direction, float range, HybridTrackerCollection[] exclude = null)
+        public static void RaycastPrepare(Vector3 origin, Vector3 direction, float range, HybridTrackerCollection[] exclude = null, uint layerMask = uint.MaxValue)
         {
             for (int i = 0; i < _simulationObjects.Count; i++)
             {
@@ -174,6 +175,13 @@ namespace PG.LagCompensation.Hybrid
                 if (_simulationObjects[i].GetCachedIsUpToDate)
                 {
                     // InterpolateFully() and SetStateTransformToCached() already happended for the given time
+                    continue;
+                }
+
+                // check if any layer of the collection is also on the mask
+                uint layers = _simulationObjects[i].layers;
+                if ((layers & layerMask) == 0)
+                {
                     continue;
                 }
 

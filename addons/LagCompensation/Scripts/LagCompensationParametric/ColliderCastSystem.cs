@@ -86,8 +86,9 @@ namespace PG.LagCompensation.Parametric
         /// <param name="hitColliderIndex">Index of collider in collection. <c>-1</c> if nothing has been hit.</param>
         /// <param name="exclude">Exclude this collection from being checked.</param>
         /// <param name="includeInternal">Include hits where the origin is within the collider</param>
+        /// <param name="layerMask">Only considers HitColliders on layers included on this mask. Default value includes all layers.</param>
         /// <returns>Has anything been hit?</returns>
-        public static bool ColliderCast(bool useCached, Vector3 origin, Vector3 direction, float range, out ColliderCastHit hit, out HitColliderCollection collection, out int hitColliderIndex, HitColliderCollection[] exclude = null, bool includeInternal = false)
+        public static bool ColliderCast(bool useCached, Vector3 origin, Vector3 direction, float range, out ColliderCastHit hit, out HitColliderCollection collection, out int hitColliderIndex, HitColliderCollection[] exclude = null, bool includeInternal = false, uint layerMask = uint.MaxValue)
         {
             hit = ColliderCastHit.Zero;
             ColliderCastHit newHit;
@@ -105,6 +106,13 @@ namespace PG.LagCompensation.Parametric
                     {
                         continue; // skip this one
                     }
+                }
+
+                // check if any layer of the collection is also on the mask
+                uint layers = useCached ? simulationObject.GetCachedLayers : simulationObject.layers;
+                if ((layers & layerMask) == 0)
+                {
+                    continue;
                 }
 
                 if (simulationObject.CheckBoundingSphere(useCached, origin, direction))
@@ -145,11 +153,12 @@ namespace PG.LagCompensation.Parametric
         /// <param name="hitColliderIndex">Index of collider in collection. <c>-1</c> if nothing has been hit.</param>
         /// <param name="exclude">Exclude this collection from being checked.</param>
         /// <param name="includeInternal">Include hits where the origin is within the collider</param>
+        /// <param name="layerMask">Only considers HitColliders on layers included on this mask. Default value includes all layers.</param>
         /// <returns>Has anything been hit?</returns>
         [ObsoleteAttribute("Use 'ColliderCast' instead.", false)]
-        public static bool ColliderCastLive(Vector3 origin, Vector3 direction, float range, out ColliderCastHit hit, out HitColliderCollection collection, out int hitColliderIndex, HitColliderCollection[] exclude = null, bool includeInternal = false)
+        public static bool ColliderCastLive(Vector3 origin, Vector3 direction, float range, out ColliderCastHit hit, out HitColliderCollection collection, out int hitColliderIndex, HitColliderCollection[] exclude = null, bool includeInternal = false, uint layerMask = uint.MaxValue)
         {
-            return ColliderCast(false, origin, direction, range, out hit, out collection, out hitColliderIndex, exclude, includeInternal);
+            return ColliderCast(false, origin, direction, range, out hit, out collection, out hitColliderIndex, exclude, includeInternal, layerMask);
         }
 
         /// <summary>
@@ -163,11 +172,12 @@ namespace PG.LagCompensation.Parametric
         /// <param name="hitColliderIndex">Index of collider in collection. <c>-1</c> if nothing has been hit.</param>
         /// <param name="exclude">Exclude this collection from being checked.</param>
         /// <param name="includeInternal">Include hits where the origin is within the collider</param>
+        /// <param name="layerMask">Only considers HitColliders on layers included on this mask. Default value includes all layers.</param>
         /// <returns>Has anything been hit?</returns>
         [ObsoleteAttribute("Use 'ColliderCast' instead.", false)]
-        public static bool ColliderCastCached(Vector3 origin, Vector3 direction, float range, out ColliderCastHit hit, out HitColliderCollection collection, out int hitColliderIndex, HitColliderCollection[] exclude = null, bool includeInternal = false)
+        public static bool ColliderCastCached(Vector3 origin, Vector3 direction, float range, out ColliderCastHit hit, out HitColliderCollection collection, out int hitColliderIndex, HitColliderCollection[] exclude = null, bool includeInternal = false, uint layerMask = uint.MaxValue)
         {
-            return ColliderCast(true, origin, direction, range, out hit, out collection, out hitColliderIndex, exclude, includeInternal);
+            return ColliderCast(true, origin, direction, range, out hit, out collection, out hitColliderIndex, exclude, includeInternal, layerMask);
         }
 
         #endregion

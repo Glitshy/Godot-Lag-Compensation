@@ -10,10 +10,12 @@ namespace PG.LagCompensation.Parametric
 {
     /// <summary>
     /// Collection of hit colliders with different shapes. On cast checking the bounding sphere of this is checked first before any child colliders.
+    /// <br></br>
+    /// Allows setting layers, limiting which raycasts will hit the colliders in this collection or not. Layers are stored together with position/rotation and interpolated according to the current settings.
     /// </summary>
     [GlobalClass]
     [Tool]
-    public partial class HitColliderCollection : TrackerBase
+    public partial class HitColliderCollection : TrackerLayeredBase
     {
         public override Node3D GetTargetNode => this;
         public override int GetHistoryLength => ColliderCastSystem.GetFrameHistoryLength;
@@ -79,6 +81,31 @@ namespace PG.LagCompensation.Parametric
             return hitColliders[i];
         }
 
+        /// <summary>
+        /// Layers of this collection and all its <see cref="HitColliderGeneric"/> children
+        /// </summary>
+        private uint _layers = 1;
+
+        /// <summary>
+        /// Layers of this collection and all its <see cref="HitColliderGeneric"/> children
+        /// </summary>
+        [Export(PropertyHint.Layers3DPhysics)]
+        public uint layers
+        {
+            get { return _layers; }
+            set { _layers = value; }
+        }
+
+        protected override uint GetLayers => _layers;
+
+        private InterpolationMode _interpolationMode = InterpolationMode.Balanced;
+
+        [Export]
+        public override InterpolationMode interpolationMode
+        {
+            get { return _interpolationMode; }
+            set { _interpolationMode = value; }
+        }
 
         public override float GetBoundingSphereRadius => _radius;
         public override float GetBoundingSphereRadiusSquared => _radius * _radius;
