@@ -171,9 +171,9 @@ namespace PG.LagCompensation.Hybrid
                     continue;
                 }
 
-                if (_simulationObjects[i].CheckBoundingSphereCached(origin, direction))
+                if (_simulationObjects[i].CheckBoundingSphere(true, origin, direction))
                 {
-                    if (_simulationObjects[i].CheckBoundingSphereDistanceCached(origin, direction, range))
+                    if (_simulationObjects[i].CheckBoundingSphereDistance(true, origin, direction, range))
                     {
                         // the collection bounding sphere has been intersected --> must do detailed checking of the children
                         _simulationObjects[i].InterpolateFully();

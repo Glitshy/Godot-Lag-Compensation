@@ -78,14 +78,8 @@ namespace PG.LagCompensation.Hybrid
         }
 
 
-        /// <summary>
-        /// Get Radius of bounding sphere
-        /// </summary>
         public override float GetBoundingSphereRadius => _radius;
 
-        /// <summary>
-        /// Get squared Radius of bounding sphere (better performance in some cases)
-        /// </summary>
         public override float GetBoundingSphereRadiusSquared => _radius * _radius;
 
         /// <summary>

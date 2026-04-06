@@ -30,7 +30,7 @@ namespace PG.LagCompensation.Hybrid
         public override int GetHistoryLength => HybridTrackerSystem.GetFrameHistoryLength;
 
         /// <summary>
-        /// Last postion and rotation before rewinding
+        /// Last position and rotation before rewinding
         /// </summary>
         private TransformFrameData _savedFrameData = new TransformFrameData();
 
