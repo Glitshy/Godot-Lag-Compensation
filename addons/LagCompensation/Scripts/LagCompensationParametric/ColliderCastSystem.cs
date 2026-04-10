@@ -199,6 +199,128 @@ namespace PG.LagCompensation.Parametric
 
         #endregion
 
+        #region Overlap Checking
+
+        /// <summary>
+        /// Check for collections whose bounding sphere overlaps with the sphere defined by the given center and radius.
+        /// </summary>
+        /// <param name="useCached">false = use live transform / true = use cached transform</param>
+        /// <param name="center">Center of sphere.</param>
+        /// <param name="radius">Radius of sphere.</param>
+        /// <param name="listToModifiy">Will be cleared and filled by this check instead of creating a new list.</param>
+        /// <param name="layerMask">Only considers HitColliders on layers included on this mask. Default value includes all layers.</param>
+        /// <returns>List of overlapping collections. If a list has been passed to this function, this will be a reference to same list.</returns>
+        public static List<HitColliderCollection> OverlapSphereCollections(bool useCached, Vector3 center, float radius, List<HitColliderCollection> listToModifiy = null, uint layerMask = uint.MaxValue)
+        {
+            List<HitColliderCollection> collections;
+
+            if (listToModifiy != null)
+            {
+                collections = listToModifiy;
+                collections.Clear();
+            }
+            else
+            {
+                collections = new List<HitColliderCollection>();
+            }
+
+            for (int i = 0; i < _simulationObjects.Count; i++)
+            {
+                var simulationObject = _simulationObjects[i];
+
+                // check if any layer of the collection is also on the mask
+                uint layers = useCached ? simulationObject.GetCachedLayers : simulationObject.layers;
+                if ((layers & layerMask) == 0)
+                {
+                    continue;
+                }
+
+                Vector3 colCenter = useCached ? simulationObject.GetCachedPosRot.position : simulationObject.GetTargetNode.GlobalPosition;
+                float colRadius = simulationObject.GetBoundingSphereRadius;
+
+                // check if the checking sphere and the bounding sphere overlap
+                if (center.DistanceTo(colCenter) < radius + colRadius)
+                {
+                    collections.Add(simulationObject);
+                }
+            }
+
+            return collections;
+        }
+
+        /// <summary>
+        /// Check for collections whose bounding sphere overlaps with the capsule defined by the given center, diraction, distance and radius.
+        /// <br></br>
+        /// Can be used to e.g. do a sort of 'SphereCast' along a line defined by the center, direction and distance.
+        /// </summary>
+        /// <param name="useCached">false = use live transform / true = use cached transform</param>
+        /// <param name="centerStart">Center of first sphere of capsule.</param>
+        /// <param name="direction">Normalized direction pointing from center of first sphere of capsule to second center.</param>
+        /// <param name="centerDistance">Distance between first and second center of capsule.</param>
+        /// <param name="radius">Radius of capsule.</param>
+        /// <param name="listToModifiy">Will be cleared and filled by this check instead of creating a new list.</param>
+        /// <param name="layerMask">Only considers HitColliders on layers included on this mask. Default value includes all layers.</param>
+        /// <returns>List of overlapping collections. If a list has been passed to this function, this will be a reference to same list.</returns>
+        public static List<HitColliderCollection> OverlapCapsuleCollections(bool useCached, Vector3 centerStart, Vector3 direction, float centerDistance, float radius, List<HitColliderCollection> listToModifiy = null, uint layerMask = uint.MaxValue)
+        {
+            List<HitColliderCollection> collections;
+
+            if (listToModifiy != null)
+            {
+                collections = listToModifiy;
+                collections.Clear();
+            }
+            else
+            {
+                collections = new List<HitColliderCollection>();
+            }
+
+            for (int i = 0; i < _simulationObjects.Count; i++)
+            {
+                var simulationObject = _simulationObjects[i];
+
+                // check if any layer of the collection is also on the mask
+                uint layers = useCached ? simulationObject.GetCachedLayers : simulationObject.layers;
+                if ((layers & layerMask) == 0)
+                {
+                    continue;
+                }
+
+                Vector3 colCenter = useCached ? simulationObject.GetCachedPosRot.position : simulationObject.GetTargetNode.GlobalPosition;
+                float colRadius = simulationObject.GetBoundingSphereRadius;
+
+                // check if the checking capsule and the bounding sphere overlap
+                if (simulationObject.CheckBoundingSphereDistance(useCached, centerStart, direction, centerDistance, radius))
+                {
+                    collections.Add(simulationObject);
+                }
+            }
+
+            return collections;
+        }
+
+        /// <summary>
+        /// Check for collections whose bounding sphere overlaps with the capsule defined by the given centers and radius.
+        /// <br></br>
+        /// Can be used to e.g. do a sort of 'SphereCast' along a line defined by the two centers.
+        /// </summary>
+        /// <param name="useCached">false = use live transform / true = use cached transform</param>
+        /// <param name="centerStart">Center of first sphere of capsule.</param>
+        /// <param name="centerStop">Center of first sphere of capsule.</param>
+        /// <param name="radius">Radius of capsule.</param>
+        /// <param name="listToModifiy">Will be cleared and filled by this check instead of creating a new list.</param>
+        /// <param name="layerMask">Only considers HitColliders on layers included on this mask. Default value includes all layers.</param>
+        /// <returns>List of overlapping collections. If a list has been passed to this function, this will be a reference to same list.</returns>
+        public static List<HitColliderCollection> OverlapCapsuleCollections(bool useCached, Vector3 centerStart, Vector3 centerStop, float radius, List<HitColliderCollection> listToModifiy = null, uint layerMask = uint.MaxValue)
+        {
+            float centerDistance = (centerStop - centerStart).Length();
+            Vector3 direction = (centerStop - centerStart) / centerDistance;
+
+            return OverlapCapsuleCollections(useCached, centerStart, direction, centerDistance, radius, listToModifiy, layerMask);
+        }
+
+        #endregion
+
         #region Lag Compensation
 
         /// <summary>
